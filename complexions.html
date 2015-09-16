@@ -533,7 +533,7 @@
 
                 complex+=trans;
 
-                if(ligand1.length>2||ligand1==="OH"||ligand1==="CN"){
+                if((ligand1.length>2||ligand1==="OH"||ligand1==="CN")&&lig1count!==1){
 
                     complex+="(";
 
@@ -541,7 +541,7 @@
 
                 complex+=ligand1;
 
-                if(ligand1.length>2||ligand1==="OH"||ligand1==="CN"){
+                if((ligand1.length>2||ligand1==="OH"||ligand1==="CN")&&lig1count!==1){
 
                     complex+=")";
 
@@ -555,7 +555,7 @@
 
                 if(ligand2 !== ""){
 
-                    if(ligand2.length>2||ligand1==="OH"||ligand1==="CN"){
+                    if((ligand2.length>2||ligand1==="OH"||ligand1==="CN")&&lig1count!==1){
 
                         complex+="(";
 
@@ -563,7 +563,7 @@
 
                     complex+=ligand2;
 
-                    if(ligand2.length>2||ligand1==="OH"||ligand1==="CN"){
+                    if((ligand2.length>2||ligand1==="OH"||ligand1==="CN")&&lig1count!==1){
 
                         complex+=")";
 
@@ -673,14 +673,16 @@
                 complex+="[";
 
                 complex+=trans;
-		if(ligand1.length>2||ligand1==="OH"||ligand1==="CN")
+		if((ligand1.length>2||ligand1==="OH"||ligand1==="CN")&&lig1count!==1){
 
-                complex+="(";
+                    complex+="(";
 
+		}
                 complex+=ligand1;
-		if(ligand1.length>2||ligand1==="OH"||ligand1==="CN")
+		if((ligand1.length>2||ligand1==="OH"||ligand1==="CN")&&lig1count!==1){
 
-                complex+=")";
+                    complex+=")";
+		}
 
                 if(lig1count>1){
 
@@ -751,13 +753,15 @@
                 }
 
                 if(ligand2 !== ""){
-		if(ligand2.length>2||ligand1==="OH"||ligand1==="CN")
+		    if((ligand2.length>2||ligand1==="OH"||ligand1==="CN")&&lig1count!==1){
 
-                    complex+="(";
+                        complex+="(";
+		    }
                     complex+=ligand2;
-if(ligand2.length>2||ligand1==="OH"||ligand1==="CN")
+		    if((ligand2.length>2||ligand1==="OH"||ligand1==="CN")&&lig1count!==1){
 
-                    complex+=")";
+                        complex+=")";
+		    }
 
                     if(lig2count>1){
 
