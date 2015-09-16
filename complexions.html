@@ -533,7 +533,7 @@
 
                 complex+=trans;
 
-                if(ligand1.length>2){
+                if(ligand1.length>2||ligand1==="OH"||ligand1==="CN"){
 
                     complex+="(";
 
@@ -541,7 +541,7 @@
 
                 complex+=ligand1;
 
-                if(ligand1.length>2){
+                if(ligand1.length>2||ligand1==="OH"||ligand1==="CN"){
 
                     complex+=")";
 
@@ -555,7 +555,7 @@
 
                 if(ligand2 !== ""){
 
-                    if(ligand2.length>2){
+                    if(ligand2.length>2||ligand1==="OH"||ligand1==="CN"){
 
                         complex+="(";
 
@@ -563,7 +563,7 @@
 
                     complex+=ligand2;
 
-                    if(ligand2.length>2){
+                    if(ligand2.length>2||ligand1==="OH"||ligand1==="CN"){
 
                         complex+=")";
 
@@ -673,12 +673,12 @@
                 complex+="[";
 
                 complex+=trans;
-		if(ligand1.length>2)
+		if(ligand1.length>2||ligand1==="OH"||ligand1==="CN")
 
                 complex+="(";
 
                 complex+=ligand1;
-		if(ligand1.length>2)
+		if(ligand1.length>2||ligand1==="OH"||ligand1==="CN")
 
                 complex+=")";
 
@@ -751,11 +751,11 @@
                 }
 
                 if(ligand2 !== ""){
-		if(ligand2.length>2)
+		if(ligand2.length>2||ligand1==="OH"||ligand1==="CN")
 
                     complex+="(";
                     complex+=ligand2;
-if(ligand2.length>2)
+if(ligand2.length>2||ligand1==="OH"||ligand1==="CN")
 
                     complex+=")";
 
