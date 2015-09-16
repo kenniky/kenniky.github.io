@@ -291,7 +291,7 @@
 
                 //console.log(textbox.value);
 
-                if(textbox.value !== null && textbox.value.localeCompare(ans)===0){
+                if(textbox.value !== null && textbox.value.toUpperCase()===ans.toUpperCase()){
 
                     answer1.textContent="Correct! Press 'Generate New' to get another one";
 
@@ -379,7 +379,7 @@
 
                             ligand2=randElement(ligands);
 
-                        }while(ligand1.localeCompare(ligand2)===0);
+                        }while(ligand1===ligand2);
 
                         lig2count=Math.floor(Math.random()*10)+1;
 
