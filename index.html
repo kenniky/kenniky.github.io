@@ -385,6 +385,14 @@
                         lig2count=Math.floor(Math.random()*10)+1;
 
                     }while(cmpxIonCharge()===0);
+		    if(ligand.get(ligand1).localeCompare(ligand.get(ligand2)) > 0){
+			var tmp = ligand1;
+			ligand1 = ligand2;
+			ligand2 = tmp;
+			tmp = lig1count;
+			lig1count = lig2count;
+			lig2count = tmp;
+		    }
 
                 }
 
