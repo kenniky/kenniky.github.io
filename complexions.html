@@ -291,10 +291,11 @@
 
                 //console.log(textbox.value);
 
-                if(textbox.value !== null && textbox.value.toUpperCase()===ans.toUpperCase()){
+                if(textbox.value !== null && (textbox.value.toUpperCase()===ans.toUpperCase() || textbox.value.toUpperCase()===altformula().toUpperCase())){
 
                     answer1.textContent="Correct! Press 'Generate New' to get another one";
 
+		    answer2.textContent="";
                 }
 
                 else{
@@ -567,6 +568,68 @@
                         complex+=")";
 
                     }
+
+                    if(lig2count>1){
+
+                        complex+=lig2count;
+
+                    }
+
+                }
+
+                complex+="]";
+
+                var supplement = "";
+
+                supplement+=supp;
+
+                if(suppNeeded()!==1)
+
+                supplement+=suppNeeded();
+
+                
+
+                if(cmpxIonCharge()>0){//complex ion is cation
+
+                    return complex+supplement;
+
+                }
+
+                else{
+
+                    return supplement+complex;
+
+                }
+
+            }
+
+
+            function altformula(){
+
+                var complex = "";
+
+                complex+="[";
+
+                complex+=trans;
+
+                complex+="(";
+
+                complex+=ligand1;
+
+                complex+=")";
+
+                if(lig1count>1){
+
+                    complex+=lig1count;
+
+                }
+
+                if(ligand2 !== ""){
+
+                    complex+="(";
+                    complex+=ligand2;
+
+                    complex+=")";
 
                     if(lig2count>1){
 
