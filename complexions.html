@@ -665,6 +665,134 @@
 
             }
 
+
+            function altformula2(){
+
+                var complex = "";
+
+                complex+="[";
+
+                complex+=trans;
+		if(ligand1.length>2)
+
+                complex+="(";
+
+                complex+=ligand1;
+		if(ligand1.length>2)
+
+                complex+=")";
+
+                if(lig1count>1){
+
+                    complex+=lig1count;
+
+                }
+
+                if(ligand2 !== ""){
+
+                    complex+="(";
+                    complex+=ligand2;
+
+                    complex+=")";
+
+                    if(lig2count>1){
+
+                        complex+=lig2count;
+
+                    }
+
+                }
+
+                complex+="]";
+
+                var supplement = "";
+
+                supplement+=supp;
+
+                if(suppNeeded()!==1)
+
+                supplement+=suppNeeded();
+
+                
+
+                if(cmpxIonCharge()>0){//complex ion is cation
+
+                    return complex+supplement;
+
+                }
+
+                else{
+
+                    return supplement+complex;
+
+                }
+
+            }
+
+
+            function altformula(){
+
+                var complex = "";
+
+                complex+="[";
+
+                complex+=trans;
+
+                complex+="(";
+
+                complex+=ligand1;
+
+                complex+=")";
+
+                if(lig1count>1){
+
+                    complex+=lig1count;
+
+                }
+
+                if(ligand2 !== ""){
+		if(ligand2.length>2)
+
+                    complex+="(";
+                    complex+=ligand2;
+if(ligand2.length>2)
+
+                    complex+=")";
+
+                    if(lig2count>1){
+
+                        complex+=lig2count;
+
+                    }
+
+                }
+
+                complex+="]";
+
+                var supplement = "";
+
+                supplement+=supp;
+
+                if(suppNeeded()!==1)
+
+                supplement+=suppNeeded();
+
+                
+
+                if(cmpxIonCharge()>0){//complex ion is cation
+
+                    return complex+supplement;
+
+                }
+
+                else{
+
+                    return supplement+complex;
+
+                }
+
+            }
+
             
 
             function cmpxIonCharge(){
