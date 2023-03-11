@@ -5,12 +5,25 @@
     <meta name='viewport' content='width=device-width, initial-scale=1'>
     <script src='https://cdn.jsdelivr.net/pyodide/v0.22.1/full/pyodide.js'></script>
     <title>UltRank Tournament Tierer</title>
+    <style type="text/css">
+        #result table {
+            border-collapse: collapse;
+        }
+
+        #result td, th {
+            border-width: 1px;
+            border-color: black;
+            border-style: solid;
+            padding: 5px;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
     <center>
         <div>
             <label for='startggkey'>Start.gg key:</label>
-            <input type='text' id='startggkey'>
+            <input type='text' id='startggkey' autocomplete='on'>
         </div>
 
         <div>
@@ -36,7 +49,7 @@
             Please refer to the <a href="https://docs.google.com/spreadsheets/d/1sno_lCDwendy0WT6r9DxFq6OpfPeWkJE8yC3AUD9cs0/edit#gid=1064305668">player values</a> portion of the UltRank TTS to find your region's actual multiplier.
         </div>
 
-        <pre id='result'></pre>
+        <div id='result'></div>
     </center>
     <script type='text/javascript'>
         let startggKeyRegex = /tournament\/[a-z0-9-_]*\/event\/[a-z0-9-_]*/;
@@ -50,23 +63,171 @@
 
         let pyodideReadyPromise = getPyodide();
 
-        async function writeGithubFile(fileName) {
-            let pyodide = await pyodideReadyPromise;
-            let fileResponse = await fetch('https://raw.githubusercontent.com/kenniky/ultrank-scoring/main/' + fileName);
-            let fileBuffer = await fileResponse.arrayBuffer();
+        function showResult(result) {
+            let resultDiv = document.getElementById('result');
 
-            pyodide.FS.writeFile(fileName, new DataView(fileBuffer));
-        }
+            // Clear div
+            while (resultDiv.firstChild) {
+                resultDiv.removeChild(resultDiv.firstChild);
+            }
 
-        async function populateFiles() {
-            const files = ['ultrank_invitational.csv', 'ultrank_players.csv', 'ultrank_regions.csv', 'ultrank_tags.csv', 'ultrank_tiering.py', 'startgg_toolkit.py'];
+            let header = document.createElement('h2');
+            header.textContent = `${result.tournament} - ${result.event}`;
+            resultDiv.appendChild(header)
 
-            files.forEach(writeGithubFile);
-        }
+            if (result.is_invitational) {
+                let invitationalNode = document.createElement('div');
+                invitationalNode.textContent = `<i>Invitational</i>`;
+                resultDiv.appendChild(invitationalNode);
+            }
 
-        async function writeStartggKeyFile(key) {
-            let pyodide = await pyodideReadyPromise;
-            pyodide.FS.writeFile('smashgg.key', key);
+            if (!result.should_count()) {
+                let warningNode = document.createElement('div');
+                warningNode.textContent = '<b>WARNING: This tournament does not qualify for UltRank.</b>';
+                resultDiv.appendChild(warningNode);
+            }
+            else if (!result.should_count_strict()) {
+                let warningNode = document.createElement('div');
+                warningNode.textContent = '<b>WARNING: This tournament may not qualify for UltRank.</b>';
+                resultDiv.appendChild(warningNode);
+            }
+
+            let pointsHeader = document.createElement('h4');
+            pointsHeader.textContent = `Total points: ${result.score}`;
+            resultDiv.appendChild(pointsHeader)
+
+            let entrantsNode = document.createElement('div');
+            entrantsNode.textContent = `Entrants: ${result.entrants}`;
+            resultDiv.appendChild(entrantsNode);
+
+            if (result.values.length > 0) {
+                let tableNode = document.createElement('table');
+
+                let tableHead = tableNode.createTHead();
+                let tableHeadRow = tableHead.insertRow();
+                let headers = ['Player', 'Points', 'Point Source'];
+                for (let headerText of headers) {
+                    let th = document.createElement("th");
+                    let text = document.createTextNode(headerText);
+                    th.appendChild(text);
+                    tableHeadRow.appendChild(th);
+                }
+
+                for (let value of result.values) {
+                    let row = tableNode.insertRow();
+                    
+                    let playerName = value.alt_tag;
+                    if (value.alt_tag !== value.tag) {
+                        playerName += ' (aka ';
+                        playerName += value.tag;
+                        playerName += ')';
+                    }
+                    let cell = row.insertCell();
+                    let text = document.createTextNode(playerName);
+                    cell.appendChild(text);
+
+                    cell = row.insertCell();
+                    text = document.createTextNode(value.points);
+                    cell.appendChild(text);
+
+                    cell = row.insertCell();
+                    text = document.createTextNode(value.player_value.note);
+                    cell.appendChild(text);
+
+                }
+
+                resultDiv.appendChild(tableNode);
+            }
+
+            if (result.dqs.length > 0) {
+                let dqs_header = document.createElement('h4');
+                dqs_header.textContent = `DQs (not counted in points)`;
+                resultDiv.appendChild(dqs_header)
+
+                let tableNode = document.createElement('table');
+
+                let tableHead = tableNode.createTHead();
+                let tableHeadRow = tableHead.insertRow();
+                let headers = ['Player', 'Points', 'Point Source', 'DQs'];
+                for (let headerText of headers) {
+                    let th = document.createElement("th");
+                    let text = document.createTextNode(headerText);
+                    th.appendChild(text);
+                    tableHeadRow.appendChild(th);
+                }
+
+                for (let value of result.dqs) {
+                    let row = tableNode.insertRow();
+                    
+                    let playerName = value.value.alt_tag;
+                    if (value.value.alt_tag !== value.value.tag) {
+                        playerName += ' (aka ';
+                        playerName += value.value.tag;
+                        playerName += ')';
+                    }
+                    let cell = row.insertCell();
+                    let text = document.createTextNode(playerName);
+                    cell.appendChild(text);
+
+                    cell = row.insertCell();
+                    text = document.createTextNode(value.value.points);
+                    cell.appendChild(text);
+
+                    cell = row.insertCell();
+                    text = document.createTextNode(value.value.player_value.note);
+                    cell.appendChild(text);
+
+                    cell = row.insertCell();
+                    text = document.createTextNode(value.dqs);
+                    cell.appendChild(text);
+                }
+
+                resultDiv.appendChild(tableNode);
+            }
+
+            if (result.potential.length > 0) {
+                let potential_header = document.createElement('h4');
+                potential_header.textContent = `Potential Matches (not counted for points)`;
+                resultDiv.appendChild(potential_header)
+
+                let tableNode = document.createElement('table');
+
+                let tableHead = tableNode.createTHead();
+                let tableHeadRow = tableHead.insertRow();
+                let headers = ['Player', 'Potential Match', 'Points', 'Point Source', 'Notes'];
+                for (let headerText of headers) {
+                    let th = document.createElement("th");
+                    let text = document.createTextNode(headerText);
+                    th.appendChild(text);
+                    tableHeadRow.appendChild(th);
+                }
+
+                for (let value of result.potential) {
+                    let row = tableNode.insertRow();
+                    
+                    let cell = row.insertCell();
+                    let text = document.createTextNode(value.tag);
+                    cell.appendChild(text);
+
+                    cell = row.insertCell();
+                    text = document.createTextNode(value.actual_tag);
+                    cell.appendChild(text);
+
+                    cell = row.insertCell();
+                    text = document.createTextNode(value.points);
+                    cell.appendChild(text);
+
+                    cell = row.insertCell();
+                    text = document.createTextNode(value.note);
+                    cell.appendChild(text);
+
+                    cell = row.insertCell();
+                    text = document.createTextNode(value.dqs === 0 ? '' : `${value.dqs} DQ${value.dqs === 1 ? '' : 's'}`);
+                    cell.appendChild(text);
+                }
+
+                resultDiv.appendChild(tableNode);
+            }
         }
 
         async function submit() {
@@ -175,16 +336,17 @@ def send_request(query, variables, quiet=False):
                         # Note: since geopy relies on sockets, we can't use it.
                         tournament = Tournament(tournamentSlug, isInvitational, location=False)
 
-                        result = tournament.calculate_tier()
-                        f = StringIO()
-                        result.write_result(f)
-
-                        f.getvalue()
+                        tournament.calculate_tier()
                     `);
+                let resultCopy = result.copy();
 
-                resultDiv.textContent = result;
+                showResult(resultCopy);
+
+                result.destroy();
+                resultCopy.destroy();
             } catch(err) {
                 resultDiv.textContent = 'Something went wrong. Wait a bit then try again';
+                console.log(err);
             }
         }
 
