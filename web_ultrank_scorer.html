@@ -208,12 +208,12 @@
         let filesImported = false;
         let packagesImported = false;
 
+        let pyodideReadyPromise = undefined;
+
         async function getPyodide() {
             let pyodide = await loadPyodide();
             return pyodide;
         }
-
-        let pyodideReadyPromise = getPyodide();
 
         function showResult(result) {
             let resultDiv = document.getElementById('result');
@@ -391,7 +391,13 @@
         }
 
         async function submit() {
+
             let resultDiv = document.getElementById('result');
+
+            resultDiv.innerHTML = `<img src="https://media.tenor.com/wpSo-8CrXqUAAAAi/loading-loading-forever.gif">`;
+            if (pyodideReadyPromise === undefined) {
+                pyodideReadyPromise = getPyodide();
+            }
 
             try {
                 let pyodide = await pyodideReadyPromise;
