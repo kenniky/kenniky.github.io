@@ -260,6 +260,10 @@
             entrantsNode.innerHTML = `Entrants: ${result.entrants} × ${mult} (region multiplier) = <b>${result.entrants * mult}</b>`;
             resultDiv.appendChild(entrantsNode);
 
+            let playerValueHeader = document.createElement('h3');
+            playerValueHeader.textContent = `Player value points`;
+            resultDiv.appendChild(playerValueHeader)
+
             if (result.values.length > 0) {
                 let tableNode = document.createElement('table');
 
@@ -394,7 +398,12 @@
 
             let resultDiv = document.getElementById('result');
 
+            // Clear div
+            while (resultDiv.firstChild) {
+                resultDiv.removeChild(resultDiv.firstChild);
+            }
             resultDiv.innerHTML = `<img src="https://media.tenor.com/wpSo-8CrXqUAAAAi/loading-loading-forever.gif">`;
+
             if (pyodideReadyPromise === undefined) {
                 pyodideReadyPromise = getPyodide();
             }
