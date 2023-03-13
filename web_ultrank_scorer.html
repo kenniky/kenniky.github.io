@@ -17,13 +17,45 @@
             padding: 5px;
             text-align: center;
         }
+
+        .popup {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            color: #00f;
+        }
+
+        .popup .popuptext {
+            visibility: hidden;
+            width: 450px;
+            background-color: #eee;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px 0;
+            position: absolute;
+            z-index: 1;
+            bottom: 0%;
+            left: 100%;
+            margin-bottom: -10px;
+        }
+
+        .popup .show {
+            visibility: visible;
+        }
     </style>
 </head>
 <body>
     <center>
         <div>
-            <label for='startggkey'>Start.gg key:</label>
+            <label for='startggkey'>Start.gg API key:</label>
             <input type='text' id='startggkey' autocomplete='on'>
+            <div class='popup' id='popup'>What's this?
+                <span class='popuptext' id='popupFrame'><a href="https://developer.start.gg/docs/authentication/#generating-a-token">Follow the <b>Generating a token</b> section here to acquire an API key.</a></span>
+            </div>
+        </div>
+
+        <div>
+            
         </div>
 
         <div>
@@ -209,6 +241,12 @@
         let packagesImported = false;
 
         let pyodideReadyPromise = undefined;
+
+        function togglePopup() {
+            console.log("hihihi");
+            let popup = document.getElementById("popupFrame");
+            popup.classList.toggle("show");
+        }
 
         async function getPyodide() {
             let pyodide = await loadPyodide();
@@ -527,6 +565,9 @@ def send_request(query, variables, quiet=False):
 
         let button = document.getElementById('button');
         button.addEventListener('click', submit);
+
+        let popupText = document.getElementById('popup');
+        popupText.addEventListener('click', togglePopup);
 
     </script>
 </body>
