@@ -279,19 +279,54 @@
             let entrantMinimum = mult === 1 ? 64 : mult === 2 ? 48 : 32;
             let max_score = result.max_potential_score() + (mult - 1) * result.entrants;
 
+            let counts = true;
+
             if (result.entrants < entrantMinimum && (max_score < 250 || result.values.length + result.potential.length + result.dqs.length < 2)) {
                 let warningNode = document.createElement('div');
                 warningNode.innerHTML = `<b>WARNING: This tournament does not qualify for UltRank.</b>`;
                 resultDiv.appendChild(warningNode);
+                counts = false;
             }
             else if (result.entrants < entrantMinimum && (score < 250 || result.values.length < 2)) {
                 let warningNode = document.createElement('div');
                 warningNode.innerHTML = `<b>WARNING: This tournament may not qualify for UltRank.</b>`;
                 resultDiv.appendChild(warningNode);
+                counts = false;
+            }
+
+            var tier = 'No Tier';
+            if (counts) {
+                if (score >= 9000) {
+                    tier = 'P Tier';
+                }
+                else if (score >= 6500) {
+                    tier = 'S+ Tier';
+                }
+                else if (score >= 5000) {
+                    tier = 'S Tier';
+                }
+                else if (score >= 4000) {
+                    tier = 'A+ Tier';
+                }
+                else if (score >= 3000) {
+                    tier = 'A Tier';
+                }
+                else if (score >= 2000) {
+                    tier = 'B+ Tier';
+                }
+                else if (score >= 1000) {
+                    tier = 'B Tier';
+                }
+                else if (score >= 500) {
+                    tier = 'C Tier';
+                }
+                else {
+                    tier = 'D Tier';
+                }
             }
 
             let pointsHeader = document.createElement('h3');
-            pointsHeader.textContent = `Total points: ${score}`;
+            pointsHeader.textContent = `Total points: ${score} - ${tier}`;
             resultDiv.appendChild(pointsHeader)
 
             let entrantsNode = document.createElement('div');
