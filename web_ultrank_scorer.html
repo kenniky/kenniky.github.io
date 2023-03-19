@@ -56,18 +56,6 @@
         <br>
 
         <div>
-            <label for='startggkey'>Start.gg API key:</label>
-            <input type='text' id='startggkey' autocomplete='on'>
-            <div class='popup' id='popup'>What's this?
-                <span class='popuptext' id='popupFrame'><a href="https://developer.start.gg/docs/authentication/#generating-a-token">Follow the <b>Generating a token</b> section here to acquire an API key.</a></span>
-            </div>
-        </div>
-
-        <div>
-            
-        </div>
-
-        <div>
             <label for='tournament'>Event URL:</label>
             <input type='text' id='tournament'>
         </div>
@@ -250,12 +238,6 @@
         let packagesImported = false;
 
         let pyodideReadyPromise = undefined;
-
-        function togglePopup() {
-            console.log("hihihi");
-            let popup = document.getElementById("popupFrame");
-            popup.classList.toggle("show");
-        }
 
         async function getPyodide() {
             let pyodide = await loadPyodide();
@@ -504,19 +486,11 @@
                     packagesImported = true;
                 }
 
-                startggKey = document.getElementById('startggkey').value;
-
-                if (startggKey === '') {
-                    resultDiv.textContent = 'no startgg key provided!';
-                    return;
-                }
-
                 pyodide.runPython(`
                     from pyodide.http import pyfetch
-                    from js import startggKey
 
                     with open('smashgg.key', 'w') as f:
-                        f.write(startggKey)
+                        f.write('392c671edf7e78c64b88ae77d75ab3d2')
                 `);
 
                 let tournament = document.getElementById('tournament').value;
@@ -609,9 +583,6 @@ def send_request(query, variables, quiet=False):
 
         let button = document.getElementById('button');
         button.addEventListener('click', submit);
-
-        let popupText = document.getElementById('popup');
-        popupText.addEventListener('click', togglePopup);
 
     </script>
 </body>
