@@ -271,19 +271,24 @@
 
             let score = result.score + (mult - 1) * result.entrants;
             let entrantMinimum = mult === 1 ? 64 : mult === 2 ? 48 : 32;
+            let scoreMinimum = mult === 1 ? 250 : mult === 2 ? 200 : 150
             let max_score = result.max_potential_score() + (mult - 1) * result.entrants;
 
             let counts = true;
 
-            if (result.entrants < entrantMinimum && (max_score < 250 || result.values.length + result.potential.length + result.dqs.length < 2)) {
+            if (result.entrants < entrantMinimum && (max_score < scoreMinimum || result.values.length + result.potential.length + result.dqs.length < 2)) {
                 let warningNode = document.createElement('div');
-                warningNode.innerHTML = `<b>WARNING: This tournament does not qualify for UltRank.</b>`;
+                warningNode.innerHTML = `<b>WARNING: This tournament does not qualify for UltRank.</b>
+                <br>
+                Requirements for a x${mult} region are either ${entrantMinimum} entrants or a score of at least ${scoreMinimum} with at least 2 point-value players.`;
                 resultDiv.appendChild(warningNode);
                 counts = false;
             }
-            else if (result.entrants < entrantMinimum && (score < 250 || result.values.length < 2)) {
+            else if (result.entrants < entrantMinimum && (score < scoreMinimum || result.values.length < 2)) {
                 let warningNode = document.createElement('div');
-                warningNode.innerHTML = `<b>WARNING: This tournament may not qualify for UltRank.</b>`;
+                warningNode.innerHTML = `<b>WARNING: This tournament may not qualify for UltRank.</b>
+                <br>
+                Requirements for a x${mult} region are either ${entrantMinimum} entrants or a score of at least ${scoreMinimum} with at least 2 point-value players.`;
                 resultDiv.appendChild(warningNode);
                 counts = false;
             }
