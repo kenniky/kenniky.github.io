@@ -551,7 +551,7 @@ def send_request(query, variables, quiet=False):
         "variables": variables
     })
     req = XMLHttpRequest.new()
-    req.open('POST', SMASH_GG_ENDPOINT, False)
+    req.open("POST", SMASH_GG_ENDPOINT, False)
     req.setRequestHeader("Authorization", "Bearer " + ggkey)
     req.send(json_payload)
 
@@ -559,7 +559,7 @@ def send_request(query, variables, quiet=False):
         return json.loads(req.responseText)
         progress = True
     else:
-        raise Exception''')
+        raise Exception(f"{req.status} / {req.responseText}")''')
                     `);
                     filesImported = true;
                 }
