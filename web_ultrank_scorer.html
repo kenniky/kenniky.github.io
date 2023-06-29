@@ -277,7 +277,7 @@
 
             let score = result.score + (mult - 1) * result.entrants;
             let entrantMinimum = mult === 1 ? 64 : mult === 2 ? 48 : 32;
-            let scoreMinimum = mult === 1 ? 250 : mult === 2 ? 200 : 150
+            let scoreMinimum = mult === 1 ? 250 : 200;
             let max_score = result.max_potential_score() + (mult - 1) * result.entrants;
 
             let counts = true;
