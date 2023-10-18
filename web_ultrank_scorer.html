@@ -574,7 +574,15 @@ def send_request(query, variables, quiet=False):
         return json.loads(req.responseText)
         progress = True
     else:
-        raise Exception(f"{req.status} / {req.responseText}")''')
+        raise Exception(f"{req.status} / {req.responseText}")
+
+def isolate_slug(url):
+    match = startgg_slug_regex.search(url)
+
+    if not match:
+        raise InvalidEventUrlException 
+
+    return match.group(0).replace('/events/', '/event/')''')
                     `);
                     filesImported = true;
                 }
