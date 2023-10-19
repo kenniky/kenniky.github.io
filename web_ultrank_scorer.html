@@ -46,6 +46,16 @@
         .popup .show {
             visibility: visible;
         }
+
+        #advsettings {
+            padding-top: 5px;
+            padding-bottom: 5px;
+            padding-left: 10px;
+            padding-right: 10px;
+            background-color: whitesmoke;
+
+            width: fit-content;
+        }
     </style>
 </head>
 <body>
@@ -69,6 +79,19 @@
             <input type='checkbox' id='invitational'>
         </div>
 
+        <div>
+            <div id='advsettingsbutton' onclick='toggleadvvis()'>
+                <u>Advanced settings (click to toggle visibility)</u>
+            </div>
+            <div id='advsettings' style='display: none;'>
+                <div>
+                    <label for='startggkey'>Personal start.gg API key (for private attendee lists):</label>
+                    <input type='text' id='startggkey' style='width: 30px;'>
+                </div>
+            </div>
+        </div>
+
+        <br>
         <div>
             <label for='region'>Region:</label>
             <select id='region'>
@@ -256,6 +279,17 @@
         let packagesImported = false;
 
         let pyodideReadyPromise = undefined;
+
+        function toggleadvvis() {
+            let advsettings = document.getElementById('advsettings');
+
+            if (advsettings.style.display === 'none') {
+                advsettings.style.display = 'block';
+            }
+            else {
+                advsettings.style.display = 'none';
+            }
+        }
 
         async function getPyodide() {
             let pyodide = await loadPyodide();
@@ -509,12 +543,30 @@
                     packagesImported = true;
                 }
 
-                pyodide.runPython(`
-                    from pyodide.http import pyfetch
+                startggKey = document.getElementById('startggkey').value;
 
-                    with open('smashgg.key', 'w') as f:
-                        f.write('392c671edf7e78c64b88ae77d75ab3d2')
-                `);
+
+                if (sggkey !== startggKey) {
+                    if (startggKey === '') {
+                        pyodide.runPython(`
+                            from pyodide.http import pyfetch
+                            from js import startggKey
+
+                            with open('smashgg.key', 'w') as f:
+                                f.write('392c671edf7e78c64b88ae77d75ab3d2')
+                        `);
+                    }
+                    else {
+                        pyodide.runPython(`
+                            from pyodide.http import pyfetch
+                            from js import startggKey
+
+                            with open('smashgg.key', 'w') as f:
+                                f.write(startggKey)
+                        `);
+                    }
+                    sggkey = startggKey;
+                }
 
                 let tournament = document.getElementById('tournament').value;
 
@@ -607,10 +659,16 @@ def isolate_slug(url):
                 result.destroy();
                 resultCopy.destroy();
             } catch(err) {
-                resultDiv.textContent = 'Something went wrong. Wait a bit then try again';
+                resultText = 'Something went wrong. Wait a bit then try again';
+                if (sggkey !== '') {
+                    resultText += '\nMake sure that you copy/pasted your start.gg api key correctly.'
+                }
+                resultDiv.textContent = resultText;
                 console.log(err);
             }
         }
+
+        let sggkey = 'not set';
 
         let button = document.getElementById('button');
         button.addEventListener('click', submit);
