@@ -92,6 +92,10 @@
                     <label for='startggkey'>Personal start.gg API key (for private attendee lists):</label>
                     <input type='text' id='startggkey' style='width: 30px;'>
                 </div>
+                <div>
+                    <label for='sametag'>Show same-tag matches</label>
+                    <input type='checkbox' id='sametag'>
+                </div>
             </div>
         </div>
 
@@ -474,7 +478,9 @@
                 resultDiv.appendChild(tableNode);
             }
 
-            if (result.potential.length > 0) {
+            sameTagMatches = document.getElementById('sametag').checked;
+
+            if (sameTagMatches && result.potential.length > 0) {
                 let potential_header = document.createElement('h3');
                 potential_header.textContent = `Potential Matches (not counted for points)`;
                 resultDiv.appendChild(potential_header)
@@ -528,6 +534,8 @@
                 resultDiv.removeChild(resultDiv.firstChild);
             }
             resultDiv.innerHTML = `<img src="https://media.tenor.com/wpSo-8CrXqUAAAAi/loading-loading-forever.gif">`;
+
+            console.log(resultDiv.innerHTML);
 
             if (pyodideReadyPromise === undefined) {
                 pyodideReadyPromise = getPyodide();
