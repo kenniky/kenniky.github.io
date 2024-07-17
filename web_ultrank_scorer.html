@@ -57,8 +57,8 @@
             width: fit-content;
         }
 
-        #pre-ranking-disclaimer {
-            visibility: hidden;
+        #warning {
+            visibility: visible;
         }
     </style>
 </head>
@@ -110,12 +110,16 @@
                 </optgroup>
                 <optgroup label='USA'>
                     <option>Alaska - x3</option>
+                    <option>Arizona - x3</option>
                     <option>Carolinas (NC, SC) - x2</option>
                     <option>Florida - x1</option>
-                    <option>Georgia - x1</option>
-                    <option>Great Lakes (MI, WI, IL, IN, OH, KY, WV, West PA) - x1</option>
+                    <option>Georgia - x2</option>
+                    <option>Great Basin (NV, UT) - x1</option>
+                    <option>Great Lakes East (OH, KY, WV, West PA) - x2</option>
+                    <option>Great Lakes West (MI, WI, IL, IN) - x1</option>
                     <option>Hawaii - x3</option>
-                    <option>Heartland (ND, SD, NE, MN, IA, North MO, NE KS) - x2</option>
+                    <option>Heartland North (ND, SD, MN) - x3</option>
+                    <option>Heartland South (IA, North MO, NE, KS) - x2</option>
                     <option>Inland/Gulf Southeast (TN, MS, AL) - x2</option>
                     <option>MD/VA (MD, VA, South DE) - x1</option>
                     <option>Mid-South (OK, AR, KS, South MO) - x3</option>
@@ -124,7 +128,7 @@
                     <option>Pacific Northwest (WA, OR) - x1</option>
                     <option>Rocky Mountains (ID, MT, WY) - x3</option>
                     <option>SoCal - x1</option>
-                    <option>Southwest (NV, UT, CO, AZ, NM) - x1</option>
+                    <option>Southwest (CO, NM) - x3</option>
                     <option>Texas (+ Louisiana) - x1</option>
                     <option>Tristate (NYC, NJ, North DE, East PA) - x1</option>
                     <option>Upstate New York - x2</option>
@@ -148,11 +152,11 @@
                     <option>Northwest Mexico (Son., Chih., Sin., Dgo.) - x2</option>
                     <option>South Mexico (Mor., Gro., Oax., Chis.) - x3</option>
                     <option>West Mexico (Nay., Jal., Col., Mich.) - x2</option>
-                    <option>Yucatan Peninsula (Tab., Camp., Yuc., Q.Roo.) - x2</option>
+                    <option>Yucatan Peninsula (Tab., Camp., Yuc., Q.Roo.) - x3</option>
                 </optgroup>
                 <optgroup label='Europe'>
                     <option>Austria - x2</option>
-                    <option>Belgium - x2</option>
+                    <option>Belgium - x3</option>
                     <option>Cyprus - x3</option>
                     <option>Denmark - x3</option>
                     <option>Finland - x3</option>
@@ -161,9 +165,9 @@
                     <option>Greece - x3</option>
                     <option>Iceland - x3</option>
                     <option>Ireland & Northern Ireland - x3</option>
-                    <option>Italy - x2</option>
+                    <option>Italy - x3</option>
                     <option>Luxembourg - x3</option>
-                    <option>Netherlands - x3</option>
+                    <option>Netherlands - x2</option>
                     <option>Norway - x3</option>
                     <option>Poland - x3</option>
                     <option>Portugal - x3</option>
@@ -176,7 +180,7 @@
                     <option>United Kingdom (excl. Northern Ireland) - x2</option>
                 </optgroup>
                 <optgroup label='Japan'>
-                    <option>Chubu (中部) - x2</option>
+                    <option>Chubu (中部) - x1</option>
                     <option>Chugoku (中国) - x2</option>
                     <option>Hokkaido (北海) - x2</option>
                     <option>Hokuriku (北陸) - x3</option>
@@ -231,6 +235,7 @@
                 </optgroup>
                 <optgroup label='Middle East'>
                     <option>Bahrain - x3</option>
+                    <option>Egypt - x3</option>
                     <option>Israel - x3</option>
                     <option>Kuwait - x3</option>
                     <option>Lebanon - x3</option>
@@ -262,6 +267,12 @@
                 <option>Other - x3</option>
             </select>
         </div>
+        <div>
+            <i>
+                Note that region multipliers are updated to the current season, and tournaments from past seasons may be operating under different region multipliers.
+            </i>
+        </div>
+        <br>
 
         <div>
             <button id='button'>Tier tournament!</button>
@@ -272,14 +283,17 @@
         </div>
 
 
-        <div id='pre-ranking-disclaimer'>
+        <div id='warning'>
             <b>
-                Because LumiRank 2023 has not yet released, ranking values will not be applied for tournaments on or after December 18th, 2023. Expect heavily reduced values reported for tournaments with many top players in the meantime.
+                <i>Warning</i>: Ranking values from the previous season are not yet in effect. Tournaments on or after <i>July 16th, 2024</i> may have depressed values.
             </b>
         </div>
 
 
         <div id='result'></div>
+        <br>
+        <br>
+        <br>
     </center>
     <script type='text/javascript'>
         let startggKeyRegex = /tournament\/[a-z0-9-_]*\/event\/[a-z0-9-_]*/;
@@ -478,50 +492,56 @@
                 resultDiv.appendChild(tableNode);
             }
 
-            sameTagMatches = document.getElementById('sametag').checked;
-
-            if (sameTagMatches && result.potential.length > 0) {
+            if (result.potential.length > 0) {
+                let sameTagMatches = document.getElementById('sametag').checked;
                 let potential_header = document.createElement('h3');
                 potential_header.textContent = `Potential Matches (not counted for points)`;
                 resultDiv.appendChild(potential_header)
+                if (sameTagMatches) {
+                    let tableNode = document.createElement('table');
 
-                let tableNode = document.createElement('table');
+                    let tableHead = tableNode.createTHead();
+                    let tableHeadRow = tableHead.insertRow();
+                    let headers = ['Player', 'Potential Match', 'Points', 'Point Source', 'Notes'];
+                    for (let headerText of headers) {
+                        let th = document.createElement("th");
+                        let text = document.createTextNode(headerText);
+                        th.appendChild(text);
+                        tableHeadRow.appendChild(th);
+                    }
 
-                let tableHead = tableNode.createTHead();
-                let tableHeadRow = tableHead.insertRow();
-                let headers = ['Player', 'Potential Match', 'Points', 'Point Source', 'Notes'];
-                for (let headerText of headers) {
-                    let th = document.createElement("th");
-                    let text = document.createTextNode(headerText);
-                    th.appendChild(text);
-                    tableHeadRow.appendChild(th);
+                    for (let value of result.potential) {
+                        let row = tableNode.insertRow();
+                        
+                        let cell = row.insertCell();
+                        let text = document.createTextNode(value.tag);
+                        cell.appendChild(text);
+
+                        cell = row.insertCell();
+                        text = document.createTextNode(value.actual_tag);
+                        cell.appendChild(text);
+
+                        cell = row.insertCell();
+                        text = document.createTextNode(value.points);
+                        cell.appendChild(text);
+
+                        cell = row.insertCell();
+                        text = document.createTextNode(value.note);
+                        cell.appendChild(text);
+
+                        cell = row.insertCell();
+                        text = document.createTextNode(value.dqs === 0 ? '' : `${value.dqs} DQ${value.dqs === 1 ? '' : 's'}`);
+                        cell.appendChild(text);
+                    }
+
+                    resultDiv.appendChild(tableNode);
                 }
+                else {
+                    let disabledNode = document.createElement('div');
 
-                for (let value of result.potential) {
-                    let row = tableNode.insertRow();
-                    
-                    let cell = row.insertCell();
-                    let text = document.createTextNode(value.tag);
-                    cell.appendChild(text);
-
-                    cell = row.insertCell();
-                    text = document.createTextNode(value.actual_tag);
-                    cell.appendChild(text);
-
-                    cell = row.insertCell();
-                    text = document.createTextNode(value.points);
-                    cell.appendChild(text);
-
-                    cell = row.insertCell();
-                    text = document.createTextNode(value.note);
-                    cell.appendChild(text);
-
-                    cell = row.insertCell();
-                    text = document.createTextNode(value.dqs === 0 ? '' : `${value.dqs} DQ${value.dqs === 1 ? '' : 's'}`);
-                    cell.appendChild(text);
+                    disabledNode.innerHTML = `Same-tag match display has been disabled for ease of use. Check "Show same-tag matches" in the advanced settings and run tiering again to see matches.`;
+                    resultDiv.appendChild(disabledNode);
                 }
-
-                resultDiv.appendChild(tableNode);
             }
         }
 
