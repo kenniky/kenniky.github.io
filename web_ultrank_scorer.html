@@ -429,6 +429,10 @@
                         playerName += value.tag;
                         playerName += ')';
                     }
+                    if (value.tag === value.player_value.hex_) {
+                        playerName = value.player_value.hex_;
+                    }
+
                     let cell = row.insertCell();
                     let text = document.createTextNode(playerName);
                     cell.appendChild(text);
@@ -472,6 +476,10 @@
                         playerName += value.value.tag;
                         playerName += ')';
                     }
+                    if (value.tag === value.player_value.hex_) {
+                        playerName = value.player_value.hex_;
+                    }
+                    
                     let cell = row.insertCell();
                     let text = document.createTextNode(playerName);
                     cell.appendChild(text);
