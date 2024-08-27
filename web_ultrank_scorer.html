@@ -430,7 +430,7 @@
                         playerName += ')';
                     }
                     if (value.tag === value.player_value.hex_) {
-                        playerName = value.player_value.hex_;
+                        playerName = '(banned player)';
                     }
 
                     let cell = row.insertCell();
@@ -476,10 +476,10 @@
                         playerName += value.value.tag;
                         playerName += ')';
                     }
-                    if (value.tag === value.player_value.hex_) {
-                        playerName = value.player_value.hex_;
+                    if (value.tag === value.value.player_value.hex_) {
+                        playerName = '(banned player)';
                     }
-                    
+
                     let cell = row.insertCell();
                     let text = document.createTextNode(playerName);
                     cell.appendChild(text);
