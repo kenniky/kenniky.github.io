@@ -47,7 +47,7 @@
             visibility: visible;
         }
 
-        #advsettings {
+        .showhide {
             padding-top: 5px;
             padding-bottom: 5px;
             padding-left: 10px;
@@ -58,7 +58,7 @@
         }
 
         #warning {
-            visibility: hidden;
+            visibility: visible;
         }
     </style>
 </head>
@@ -87,15 +87,15 @@
             <div id='advsettingsbutton' onclick='toggleadvvis()'>
                 <u>Advanced settings (click to toggle visibility)</u>
             </div>
-            <div id='advsettings' style='display: none;'>
+            <div id='advsettings' style='display: none;' class='showhide'>
                 <div>
                     <label for='startggkey'>Personal start.gg API key (for private attendee lists):</label>
                     <input type='text' id='startggkey' style='width: 30px;'>
                 </div>
-                <div>
+                <!-- <div>
                     <label for='sametag'>Show same-tag matches</label>
                     <input type='checkbox' id='sametag'>
-                </div>
+                </div> -->
             </div>
         </div>
 
@@ -285,7 +285,7 @@
 
         <div id='warning'>
             <b>
-                <i>Warning</i>: Ranking values from the previous season are not yet in effect. Tournaments on or after <i>July 16th, 2024</i> may have depressed values.
+                <i>Warning</i>: Ranking values from the 2024.2 season are not yet in effect. Tournaments on or after <i>December 16th, 2024</i> may have depressed values.
             </b>
         </div>
 
@@ -310,6 +310,18 @@
             }
             else {
                 advsettings.style.display = 'none';
+            }
+        }
+
+        function togglesametag() {
+            let sametagblock = document.getElementById('sametag');
+            console.log(sametagblock);
+
+            if (sametagblock.style.display === 'none') {
+                sametagblock.style.display = 'block';
+            }
+            else {
+                sametagblock.style.display = 'none';
             }
         }
 
@@ -405,7 +417,13 @@
 
             let playerValueHeader = document.createElement('h3');
             playerValueHeader.textContent = `Player value points`;
-            resultDiv.appendChild(playerValueHeader)
+            resultDiv.appendChild(playerValueHeader);
+
+            let accountNode = document.createElement('div');
+
+            accountNode.innerHTML = `If a registered player does not show up here, it is likely that the wrong account has been invited.`;
+            resultDiv.appendChild(accountNode);
+            resultDiv.appendChild(document.createElement('br'));
 
             if (result.values.length > 0) {
                 let tableNode = document.createElement('table');
@@ -499,57 +517,84 @@
 
                 resultDiv.appendChild(tableNode);
             }
+            /*<div id='advsettingsbutton' onclick='toggleadvvis()'>
+                <u>Advanced settings (click to toggle visibility)</u>
+            </div>
+            <div id='advsettings' style='display: none;'>
+                <div>
+                    <label for='startggkey'>Personal start.gg API key (for private attendee lists):</label>
+                    <input type='text' id='startggkey' style='width: 30px;'>
+                </div>
+                <div>
+                    <label for='sametag'>Show same-tag matches</label>
+                    <input type='checkbox' id='sametag'>
+                </div>
+            </div>*/
 
             if (result.potential.length > 0) {
-                let sameTagMatches = document.getElementById('sametag').checked;
+                // let sameTagMatches = document.getElementById('sametag').checked;
                 let potential_header = document.createElement('h3');
                 potential_header.textContent = `Potential Matches (not counted for points)`;
                 resultDiv.appendChild(potential_header)
-                if (sameTagMatches) {
-                    let tableNode = document.createElement('table');
 
-                    let tableHead = tableNode.createTHead();
-                    let tableHeadRow = tableHead.insertRow();
-                    let headers = ['Player', 'Potential Match', 'Points', 'Point Source', 'Notes'];
-                    for (let headerText of headers) {
-                        let th = document.createElement("th");
-                        let text = document.createTextNode(headerText);
-                        th.appendChild(text);
-                        tableHeadRow.appendChild(th);
-                    }
+                let toggle = document.createElement('div');
+                toggle.id = 'sametagtoggle';
+                toggle.setAttribute('onclick', 'togglesametag()');
+                let toggleUnderlined = document.createElement('u');
+                toggleUnderlined.appendChild(document.createTextNode('Matches hidden for ease of use, click to show'));
+                toggle.appendChild(toggleUnderlined);
+                resultDiv.appendChild(toggle);
 
-                    for (let value of result.potential) {
-                        let row = tableNode.insertRow();
-                        
-                        let cell = row.insertCell();
-                        let text = document.createTextNode(value.tag);
-                        cell.appendChild(text);
+                let sameTagDiv = document.createElement('div');
+                sameTagDiv.id = 'sametag';
+                sameTagDiv.classList.add('showhide');
+                sameTagDiv.style.display = 'none';
 
-                        cell = row.insertCell();
-                        text = document.createTextNode(value.actual_tag);
-                        cell.appendChild(text);
+                let tableNode = document.createElement('table');
 
-                        cell = row.insertCell();
-                        text = document.createTextNode(value.points);
-                        cell.appendChild(text);
-
-                        cell = row.insertCell();
-                        text = document.createTextNode(value.note);
-                        cell.appendChild(text);
-
-                        cell = row.insertCell();
-                        text = document.createTextNode(value.dqs === 0 ? '' : `${value.dqs} DQ${value.dqs === 1 ? '' : 's'}`);
-                        cell.appendChild(text);
-                    }
-
-                    resultDiv.appendChild(tableNode);
+                let tableHead = tableNode.createTHead();
+                let tableHeadRow = tableHead.insertRow();
+                let headers = ['Player', 'Potential Match', 'Points', 'Point Source', 'Notes'];
+                for (let headerText of headers) {
+                    let th = document.createElement("th");
+                    let text = document.createTextNode(headerText);
+                    th.appendChild(text);
+                    tableHeadRow.appendChild(th);
                 }
-                else {
-                    let disabledNode = document.createElement('div');
 
-                    disabledNode.innerHTML = `Same-tag match display has been disabled for ease of use. Check "Show same-tag matches" in the advanced settings and run tiering again to see matches.`;
-                    resultDiv.appendChild(disabledNode);
+                for (let value of result.potential) {
+                    let row = tableNode.insertRow();
+                    
+                    let cell = row.insertCell();
+                    let text = document.createTextNode(value.tag);
+                    cell.appendChild(text);
+
+                    cell = row.insertCell();
+                    text = document.createTextNode(value.actual_tag);
+                    cell.appendChild(text);
+
+                    cell = row.insertCell();
+                    text = document.createTextNode(value.points);
+                    cell.appendChild(text);
+
+                    cell = row.insertCell();
+                    text = document.createTextNode(value.note);
+                    cell.appendChild(text);
+
+                    cell = row.insertCell();
+                    text = document.createTextNode(value.dqs === 0 ? '' : `${value.dqs} DQ${value.dqs === 1 ? '' : 's'}`);
+                    cell.appendChild(text);
                 }
+
+                sameTagDiv.appendChild(tableNode);
+                resultDiv.appendChild(sameTagDiv);
+                // }
+                // else {
+                //     let disabledNode = document.createElement('div');
+
+                //     disabledNode.innerHTML = `Same-tag match display has been disabled for ease of use. Check "Show same-tag matches" in the advanced settings and run tiering again to see matches.`;
+                //     resultDiv.appendChild(disabledNode);
+                // }
             }
         }
 
@@ -563,7 +608,7 @@
             }
             resultDiv.innerHTML = `<img src="https://media.tenor.com/wpSo-8CrXqUAAAAi/loading-loading-forever.gif">`;
 
-            console.log(resultDiv.innerHTML);
+            // console.log(resultDiv.innerHTML);
 
             if (pyodideReadyPromise === undefined) {
                 pyodideReadyPromise = getPyodide();
