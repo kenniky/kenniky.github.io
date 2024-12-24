@@ -352,7 +352,19 @@
             let selValue = sel.options[sel.selectedIndex].value;
             let mult = Number(selValue[selValue.length - 1]);
 
-            let score = result.score + (mult - 1) * result.entrants;
+            let score = result.score;
+
+            if (result.using_new_tiering_system()) {
+                if (mult >= 2) {
+                    score += Math.min(256, result.entrants);
+                }
+                if (mult >= 3) {
+                    score += Math.min(128, result.entrants);
+                }
+            }
+            else {
+                score = result.score + (mult - 1) * result.entrants;
+            }
             let entrantMinimum = mult === 1 ? 64 : mult === 2 ? 48 : 32;
             let scoreMinimum = mult === 1 ? 250 : 200;
             let max_score = result.max_potential_score() + (mult - 1) * result.entrants;
@@ -412,7 +424,27 @@
             resultDiv.appendChild(pointsHeader)
 
             let entrantsNode = document.createElement('div');
-            entrantsNode.innerHTML = `Entrants: ${result.entrants} × ${mult} (region multiplier) = <b>${result.entrants * mult}</b>`;
+            if (result.using_new_tiering_system()) {
+                let entrantsStr = `Entrants: ${result.entrants}`;
+                let entrantsScore = result.entrants;
+                if (mult >= 2) {
+                    entrantsStr += ` + ${Math.min(256, result.entrants)} (×2)`;
+                    entrantsScore += Math.min(256, result.entrants);
+                }
+                if (mult >= 3) {
+                    entrantsStr += ` + ${Math.min(128, result.entrants)} (×3)`;
+                    entrantsScore += Math.min(128, result.entrants);
+                }
+                if (mult === 1) {
+                    entrantsStr += ` (×1)`;
+                }
+                entrantsStr += ` = <b>${entrantsScore}</b>`;
+
+                entrantsNode.innerHTML = entrantsStr;
+            }
+            else {
+                entrantsNode.innerHTML = `Entrants: ${result.entrants} × ${mult} (region multiplier) = <b>${result.entrants * mult}</b>`;
+            }
             resultDiv.appendChild(entrantsNode);
 
             let playerValueHeader = document.createElement('h3');
