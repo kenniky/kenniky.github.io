@@ -475,7 +475,7 @@
                     let row = tableNode.insertRow();
                     
                     let playerName = value.alt_tag;
-                    if (value.alt_tag !== value.tag) {
+                    if (value.alt_tag.toLowerCase() !== value.tag.toLowerCase()) {
                         playerName += ' (aka ';
                         playerName += value.tag;
                         playerName += ')';
@@ -522,7 +522,7 @@
                     let row = tableNode.insertRow();
                     
                     let playerName = value.value.alt_tag;
-                    if (value.value.alt_tag !== value.value.tag) {
+                    if (value.value.alt_tag.toLowerCase() !== value.value.tag.toLowerCase()) {
                         playerName += ' (aka ';
                         playerName += value.value.tag;
                         playerName += ')';
@@ -671,7 +671,7 @@
                             from js import startggKey
 
                             with open('smashgg.key', 'w') as f:
-                                f.write('002f8b6800f51afc518ac635f3a11bb2')
+                                f.write('4494e81731d801bb30d98004428aa688')
                         `);
                     }
                     else {
