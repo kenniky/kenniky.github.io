@@ -368,10 +368,16 @@
             let mult = Number(selValue[selValue.length - 1]);
 
             let score = result.score;
-            console.log(mult);
-            console.log(score);
 
-            if (!result.using_new_tiering_system()) {
+            if (result.using_new_tiering_system()) {
+                if (mult >= 2) {
+                    score += Math.min(256, result.entrants);
+                }
+                if (mult >= 3) {
+                    score += Math.min(128, result.entrants);
+                }
+            }
+            else {
                 score = result.score + (mult - 1) * result.entrants;
             }
             let entrantMinimum = mult === 1 ? 64 : mult === 2 ? 48 : 32;
