@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.13.0/sql-wasm.js"></script>
+    <script src="https://unpkg.com/unzipit@1.4.2/dist/unzipit.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/simplebar@latest/dist/simplebar.css"
+    />
+    <script src="https://unpkg.com/simplebar@latest/dist/simplebar.min.js"></script>
+    <title>LumiRank Database Lookup</title>
+    <noscript>
+      <style>
+        [data-simplebar] {
+          overflow: auto;
+        }
+      </style>
+    </noscript>
+    <style type="text/css">
+        :root {
+            --gradient-tour-sp: linear-gradient(to right, #76a0d1, rgb(0,0,0,0));
+            --gradient-tour-pplus: linear-gradient(to right, #5669bf, rgb(0,0,0,0));
+            --gradient-tour-p: linear-gradient(to right, #ae5ce6, rgb(0,0,0,0));
+            --gradient-tour-splus: linear-gradient(to right, #e65c9c, rgb(0,0,0,0));
+            --gradient-tour-s: linear-gradient(to right, #e65c5c, rgb(0,0,0,0));
+            --gradient-tour-aplus: linear-gradient(to right, #e68e5c, rgb(0,0,0,0));
+            --gradient-tour-a: linear-gradient(to right, #e6a35c, rgb(0,0,0,0));
+            --gradient-tour-bplus: linear-gradient(to right, #e6ca5c, rgb(0,0,0,0));
+            --gradient-tour-b: linear-gradient(to right, #dce65c, rgb(0,0,0,0));
+            --gradient-tour-c: linear-gradient(to right, #5ce66c, rgb(0,0,0,0));
+            --gradient-tour-d: linear-gradient(to right, #5cc4e6, rgb(0,0,0,0));
+            --gradient-tour-none: linear-gradient(to right, #b7b7b7, rgb(0,0,0,0));
+
+            --gradient-set-win: linear-gradient(to right, darkseagreen, rgb(0,0,0,0));
+            --gradient-set-loss: linear-gradient(to right, lightpink, rgb(0,0,0,0));
+        }
+
+        body {
+            font-family: "Montserrat", "Tahoma", sans-serif;
+        }
+
+        #squirtle {
+            height: 128px;
+        }
+
+        #infoselect {
+            display: none;
+        }
+
+        #queryfield {
+            width: 15em;
+        }
+
+        #playerdropdown {
+            display: none;
+            position: absolute;
+            left: 0;
+            right: 0;
+            background-color: whitesmoke;
+            border-color: dimgray;
+            border-width: 1px;
+            border-style: solid;
+            overflow-x: clip;
+            height: fit-content;
+            max-height: 8em;
+            z-index: 30;
+        }
+
+        #optionsbutton {
+            height: 2em;
+            width: 7em;
+            background-color: gainsboro;
+            border-color: black;
+            border-width: 1px;
+            border-style: solid;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .dropdownitem {
+            height: 1.875em;
+            border-color: darkgray;
+            border-width: 1px;
+            border-style: solid;
+            position: relative;
+            overflow-x: clip;
+            background-color: whitesmoke;
+            overflow-y: clip;
+            cursor: pointer;
+        }
+
+        .dropdownitem:hover {
+            background-color: gainsboro;
+        }
+
+        .dropdownitemtag {
+            position: absolute;
+            left: 0;
+            right: 0;
+            text-align: left;
+            height: fit-content;
+        }
+
+        .dropdownitemid {
+            position: absolute;
+            text-align: right;
+            right: 0;
+            bottom: 0;
+            width: fit-content;
+            color: dimgray;
+            font-size: xx-small;
+        }
+
+        .dropdownitemalttags {
+            position: absolute;
+            text-align: left;
+            left: 0;
+            bottom: 0;
+            width: 70%;
+            color: dimgray;
+            font-size: xx-small;
+            white-space: nowrap;
+            overflow-x: clip;
+        }
+
+        .dropdownitemwr {
+            position: absolute;
+            text-align: right;
+            right: 0;
+            top: 0;
+            width: fit-content;
+            text-align: right;
+            font-size: xx-small;
+            color: dimgray;
+        }
+
+        .dropdownitemph {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            text-align: center;
+            line-height: 1.875em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: auto;
+        }
+
+        .playerinfowrapper {
+            width: 95vw;
+            max-width: 50em;
+        }
+
+        .playerinfoname {
+            font-size: xx-large;
+            text-align: center;
+        }
+
+        .piidurl {
+            color: inherit;
+        }
+
+        .playerinfotag {
+            padding-top: 5px;
+            text-align: center;
+        }
+
+        .tournamentresultwrapper {
+            width: 95vw;
+            max-width: 50em;
+        }
+
+        .tournamentresult {
+            width: 100%;
+        }
+
+        .tournamentresultpane {
+            height: 3.125em;
+            width: 100%;
+            border-color: dimgray;
+            border-style: solid;
+            border-width: 2px;
+            position: relative;
+            user-select: none;
+            background-color: #eeeeee;
+            cursor: pointer;
+        }
+
+        .tournamentresult-dq {
+            background-color: lightgray;
+        }
+
+        .tr-name {
+            position: absolute;
+            left: 4.125rem;
+            top: 0.1875rem;
+            bottom: 1.25rem;
+            right: 7rem;
+            font-size: 1.5rem;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            user-select: text;
+            z-index: 10;
+        }
+
+        .tr-region {
+            position: absolute;
+            left: calc(min(40%, 4.125rem + 14ch));
+            bottom: 0.1875rem;
+            text-align: left;
+            font-size: 0.875rem;
+            z-index: 10;
+        }
+
+        .tr-tiercolor {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2em;
+        }
+
+        .tr-tiercolorgrad {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            background-image: linear-gradient(to right, rgb(0,0,0,0), #eeeeee);
+        }
+
+        .tr-tier {
+            position: absolute;
+            left: 0.5rem;
+            top: 0.1875rem;
+            font-size: 1.5rem;
+            text-align: center;
+            width: 3.5rem;
+            z-index: 10;
+        }
+
+        .tr-value {
+            position: absolute;
+            left: 0.5rem;
+            bottom: 0.1875rem;
+            text-align: center;
+            font-size: 0.875rem;
+            width: 3.5rem;
+            z-index: 10;
+        }
+
+        .tr-placingwrap {
+            position: absolute;
+            top: 0;
+            right: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 10;
+        }
+
+        .tr-placing {
+            position: absolute;
+            font-size: 1.5rem;
+            top: 0.1875rem;
+            right: 3rem;
+            text-align: right;
+        }
+
+        .tr-placingord {
+            position: absolute;
+            font-size: 1.5rem;
+            top: 0.1875rem;
+            text-align: left;
+            left: calc(100% - 3rem);
+        }
+
+        .tr-dqtext {
+            position: absolute;
+            font-size: 1rem;
+            text-align: center;
+            bottom: 0.1875rem;
+            right: 3rem;
+            transform: translate(50%, 0);
+        }
+
+        .tr-placingdq {
+            color: darkred;
+        }
+
+        .tr-date {
+            position: absolute;
+            left: 4.125rem;
+            bottom: 0.1875rem;
+            text-align: left;
+            font-size: 0.875rem;
+            z-index: 10;
+        }
+
+        .setswrapper {
+            width: 100%;
+            height: fit-content;
+        }
+
+        .setwrapper {
+            width: 100%;
+            height: 2em;
+            position: relative;
+        }
+
+        .set {
+            height: 2rem;
+            left: 5%;
+            right: 0;
+            border-color: darkgray;
+            border-style: solid;
+            border-width: 1px;
+            position: absolute;
+            background-color: whitesmoke;
+        }
+
+        .set-dq {
+            background-color: gainsboro;
+        }
+
+        .setwlind {
+            position: absolute;
+            height: 100%;
+            left: 0;
+            width: 3rem;
+        }
+
+        .set-player {
+            position: absolute;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            left: 6.5em;
+            min-width: 40%;
+            cursor: pointer;
+        }
+
+        .set-tag {
+            text-align: left;
+            padding-left: 0.5rem;
+        }
+
+        .set-id {
+            color: gray;
+            font-size: 0.6rem;
+            padding-left: 0.1rem;
+        }
+
+        .set-lscore {
+            position: absolute;
+            text-align: right;
+            right: calc(100% - 3em);
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        .set-rscore {
+            left: 4em;
+            position: absolute;
+            text-align: left;
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        .set-divider {
+            position: absolute;
+            text-align: center;
+            left: 3em;
+            width: 1em;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #playersearch {
+            position: relative;
+        }
+    </style>
+    <style type="text/css" id="dqstyle">
+        .tournamentresult:has(.tournamentresult-dq) {
+            display: none;
+        }
+    </style>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,500;1,500&display=swap');
+    </style>
+</head>
+<body>
+    <center>
+        <div>
+            <img src="https://i.imgur.com/INuDoKZ.png" id='squirtle'>
+        </div>
+        <div>
+            <label for="seasonselect">Choose a season:</label>
+            <select name="seasonselect" id="seasonselect" onchange="updateCurrentDatabase()">
+                <option value="ur_db_2025">2025</option>
+                <option value="ur_db_2024_2">2024.2</option>
+                <option value="ur_db_2024">2024.1</option>
+                <option value="ur_db">2023</option>
+            </select>
+        </div>
+        <br>
+        <div id="infoselect">
+            <label>Find a player:</label>
+            <span id="playersearch">
+                <input type="text" id="queryfield" name="queryfield" onfocusin="showPlayerDropdown()" onkeyup="populatePlayerDropdown()" />
+                <div id="playerdropdown" data-simplebar></div>
+            </span>
+        </div>
+        <div id="infowaiting">Loading database...</div>
+        <br>
+        <br>
+
+        <div id='optionsbutton' onclick='toggleOptions()'>
+            <u>Options</u>
+        </div>
+        <div id='option' style='display: none;' class='showhide'>
+            <label for='dq-show'>Show DQ'd tournaments</label>
+            <input type='checkbox' id='dq-show' onchange="toggleDqTours()">
+        </div>
+        <br>
+        <div id="queryresult" />
+    </center>
+    <script type='text/javascript'>
+        let db = undefined;
+        let currSeason = undefined;
+        let lastQuery = "";
+        let wrCache = {};
+        let dqToursShown = false;
+
+        function getLetterTier(value) {
+            if (value >= 17000) return "SP";
+            if (value >= 13000) return "P+";
+            if (value >= 9000) return "P";
+            if (value >= 6500) return "S+";
+            if (value >= 5000) return "S";
+            if (value >= 4000) return "A+";
+            if (value >= 3000) return "A";
+            if (value >= 2000) return "B+";
+            if (value >= 1000) return "B";
+            if (value >= 500) return "C";
+            return "D";
+        }
+
+        function getTierColor(tier) {
+            if (tier == "SP") return "#76a0d1";
+            if (tier == "P+") return "#5669bf";
+            if (tier == "P") return "#ae5ce6";
+            if (tier == "S+") return "#e65c9c";
+            if (tier == "S") return "#e65c5c";
+            if (tier == "A+") return "#e68e5c";
+            if (tier == "A") return "#e6a35c";
+            if (tier == "B+") return "#e6ca5c";
+            if (tier == "B") return "#dce65c";
+            if (tier == "C") return "#5ce66c";
+            if (tier == "D") return "#5cc4e6";
+            return "#b7b7b7";
+        }
+
+        function ordinalSuffix(num) {
+            const j = num % 10, k = num % 100;
+            if (j === 1 && k !== 11) return "st";
+            if (j === 2 && k !== 12) return "nd";           
+            if (j === 3 && k !== 13) return "rd";
+            return "th";
+        }
+
+        /**
+          * Uses canvas.measureText to compute and return the width of the given text of given font in pixels.
+          * 
+          * @param {String} text The text to be rendered.
+          * @param {String} font The css font descriptor that text is to be rendered with (e.g. "bold 14px verdana").
+          * 
+          * @see https://stackoverflow.com/questions/118241/calculate-text-width-with-javascript/21015393#21015393
+          */
+        function getTextWidth(text, font) {
+          // re-use canvas object for better performance
+          const canvas = getTextWidth.canvas || (getTextWidth.canvas = document.createElement("canvas"));
+          const context = canvas.getContext("2d");
+          context.font = font;
+          const metrics = context.measureText(text);
+          return metrics.width;
+        }
+
+        function getCssStyle(element, prop) {
+            return window.getComputedStyle(element, null).getPropertyValue(prop);
+        }
+
+        function getCanvasFont(el = document.body) {
+          const fontWeight = getCssStyle(el, 'font-weight') || 'normal';
+          const fontSize = getCssStyle(el, 'font-size') || '16px';
+          const fontFamily = getCssStyle(el, 'font-family') || 'Times New Roman';
+          
+          return `${fontWeight} ${fontSize} ${fontFamily}`;
+        }
+
+        function getOtherTags(tagsBlob, mainTag) {
+            const otherTags = JSON.parse(tagsBlob);
+            const tagIndex = otherTags.indexOf(mainTag);
+            if (tagIndex > -1) {
+                otherTags.splice(tagIndex, 1);
+            }
+            if (otherTags.length > 0) {
+                return otherTags;
+            }
+            return null;
+        }
+
+        async function getDatabase(season) {
+            const initSqlJs = window.initSqlJs;
+
+            const sqlPromise = await initSqlJs({
+                locateFile: file => `https://sql.js.org/dist/${file}`
+            });
+            const {entries} = await window.unzipit.unzip(`https://raw.githubusercontent.com/kenniky/ultrank-database/refs/heads/main/${season}.zip`);
+            const dataPromise = await entries[`${season}.db`].arrayBuffer();
+            const [SQL, buf] = await Promise.all([sqlPromise, dataPromise])
+            const db = new SQL.Database(new Uint8Array(buf));
+
+            console.log(season);
+            const dropdownField = document.getElementById("infoselect");
+            dropdownField.style.display = "block";
+            const waitingMsg = document.getElementById("infowaiting");
+            waitingMsg.style.display = "none";
+
+            return db;
+        }
+
+        async function updateCurrentDatabase() {
+            const selectedSeason = document.getElementById("seasonselect").value;
+
+            if (currSeason !== selectedSeason) {
+                currSeason = selectedSeason;
+
+                const contentDiv = document.getElementById('queryresult');
+                clearChildren(contentDiv);
+                const searchField = document.getElementById("queryfield");
+                searchField.value = "";
+                hidePlayerDropdown(null);
+
+                db = await getDatabase(selectedSeason);
+            }
+        }
+
+        function showPlayerDropdown() {
+            const searchText = document.getElementById("queryfield").value;
+            const dropdown = document.getElementById("playerdropdown");
+
+            if (searchText.length === 0) {
+                dropdown.style.display = "none";
+            }
+            else {
+                dropdown.style.display = "block";
+            }
+        }
+
+        function populatePlayerDropdown() {
+            const searchText = document.getElementById("queryfield").value;
+            const dropdown = document.getElementById("playerdropdown");
+
+            showPlayerDropdown();
+
+            if (searchText === lastQuery) {
+                return;
+            }
+
+            if (searchText.length > 0) {
+                const dropdownInterior = dropdown.querySelector(".simplebar-content");
+                clearChildren(dropdownInterior);
+
+                const searchResults = searchTags(searchText);
+
+                // console.log(searchResults);
+
+                for (const result of searchResults) {
+                    // console.log(result);
+                    const elt = createDropdownElement(result["tag"], result["id"], result["other_tags"]);
+                    dropdownInterior.appendChild(elt);
+                }
+
+                const dropdownItems = dropdown.getElementsByClassName("dropdownitem");
+
+                if (dropdownItems.length === 0) {
+                    const placeholder = createDropdownPlaceholder();
+                    dropdownInterior.appendChild(placeholder);
+                }
+                else {
+                    // More intensive operations that should be done async
+                    for (const itm of dropdownItems) {
+                        setTimeout(resizeTextToFit, 0, itm.querySelector('.dropdownitemtag'), 1);
+                    }
+                    for (const itm of dropdownItems) {
+                        setTimeout(populateWinrate, 0, itm);
+                    }
+                }
+
+                lastQuery = searchText;
+            }
+        }
+
+        function hidePlayerDropdown(evt) {
+            if (!evt) {
+                const dropdown = document.getElementById("playerdropdown");
+
+                dropdown.style.display = "none";
+                return;
+            }
+
+            const clickedElement = evt.srcElement;
+            const playerSearchSpan = document.getElementById("playersearch");
+
+            if (!playerSearchSpan.contains(clickedElement)) {
+                const dropdown = document.getElementById("playerdropdown");
+
+                dropdown.style.display = "none";
+            }
+        }
+
+        function createDropdownElement(tag, playerId, otherTagsJson) {
+            const playerElement = document.createElement("div");
+            playerElement.classList.add("dropdownitem");
+
+            playerElement.setAttribute("playerid", playerId);
+            playerElement.setAttribute("onclick", "getPlayerDataWrapper(this)");
+
+            const playerTagElement = document.createElement("span");
+            playerTagElement.textContent = tag;
+            playerTagElement.classList.add("dropdownitemtag");
+            playerElement.appendChild(playerTagElement);
+
+            const playerIdElement = document.createElement("span");
+            playerIdElement.textContent = "id: " + playerId;
+            playerIdElement.classList.add("dropdownitemid");
+            playerElement.appendChild(playerIdElement);
+
+            const otherTags = getOtherTags(otherTagsJson, tag);
+            if (otherTags !== null) {
+                const playerOtherTagsElt = document.createElement("span");
+                playerOtherTagsElt.textContent = "aka: " + otherTags.join(", ");
+                playerOtherTagsElt.classList.add("dropdownitemalttags");
+                playerElement.appendChild(playerOtherTagsElt);
+            }
+
+            return playerElement;
+        }
+
+        async function populateWinrate(elt) {
+            // Avoid calculating for entries that don't matter anymore
+            if (!document.body.contains(elt)) {
+                return;
+            }
+            const pid = elt.getAttribute("playerid");
+
+            const winrateElement = document.createElement("span");
+            winrateElement.textContent = getWinrate(pid) + "% WR";
+            winrateElement.classList.add("dropdownitemwr");
+            elt.appendChild(winrateElement);
+        }
+
+        function createDropdownPlaceholder() {
+            const playerElement = document.createElement("div");
+            playerElement.classList.add("dropdownitem");
+
+            const noPlayerText = document.createElement("span");
+            noPlayerText.textContent = "No players found";
+            noPlayerText.classList.add("dropdownitemph");
+
+            playerElement.appendChild(noPlayerText);
+            
+            return playerElement;
+        }
+
+        function searchTags(searchString) {
+            const newSearchString = "%" + searchString + "%";
+            const query = "SELECT players.id, players.tag, players.other_tags FROM players JOIN placings ON players.id = placings.player_id WHERE upper(players.tag) LIKE upper(:search) OR upper(players.other_tags) LIKE upper(:search) GROUP BY players.id ORDER BY length(players.tag), count(placings.player_id) desc, players.tag, players.id LIMIT 50"
+            const stmt = db.prepare(query);
+
+            stmt.bind({ ':search': newSearchString });
+
+            let results = []
+            while (stmt.step()) {
+                results.push(stmt.getAsObject());
+            }
+            stmt.free();
+            return results;
+        }
+
+        function getWinrate(playerId) {
+            if (Object.hasOwn(wrCache, currSeason) && Object.hasOwn(wrCache[currSeason], playerId)) {
+                return wrCache[currSeason][playerId];
+            }
+
+            let query = "SELECT COUNT(*) FROM sets WHERE winner_id = :pid AND (player_1_id = :pid OR player_2_id = :pid) AND (player_1_score != -1 AND player_2_score != -1)";
+            let stmt = db.prepare(query);
+            const wins = stmt.get({ ":pid": playerId })[0];
+            stmt.free();
+
+            query = "SELECT COUNT(*) FROM sets WHERE (player_1_id = :pid OR player_2_id = :pid) AND (player_1_score != -1 AND player_2_score != -1)";
+            stmt = db.prepare(query);
+            const sets = stmt.get({ ":pid": playerId })[0];
+            stmt.free();
+
+            const wr = Math.round(wins / sets * 100);
+
+            if (!Object.hasOwn(wrCache, currSeason)) {
+                wrCache[currSeason] = {};
+            }
+            wrCache[currSeason][playerId] = wr;
+
+            return wr;
+        }
+
+        function getPlayerDataWrapper(playerElt) {
+            const playerId = playerElt.getAttribute("playerid");
+            getPlayerData(playerId);
+        }
+
+        function getPlayerData(playerId) {
+            const contentDiv = document.getElementById('queryresult');
+
+            clearChildren(contentDiv);
+
+            const playerInfoWrapper = document.createElement("div");
+            playerInfoWrapper.classList.add("playerinfowrapper");
+            contentDiv.appendChild(playerInfoWrapper);
+
+            contentDiv.appendChild(document.createElement("br"));
+
+            const resultsWrapper = document.createElement("div");
+            resultsWrapper.classList.add("tournamentresultwrapper");
+            contentDiv.appendChild(resultsWrapper);
+
+            populatePlayerInfo(playerInfoWrapper, playerId);
+            populateTournaments(resultsWrapper, playerId);
+
+            hidePlayerDropdown(null);
+        }
+
+        function populatePlayerInfo(parentElt, playerId) {
+            let query = "SELECT tag, other_tags FROM players WHERE id = :pid";
+            let stmt = db.prepare(query);
+            stmt.bind({":pid": playerId});
+
+            if (!stmt.step()) {
+                console.error(`could not find ${playerId} in db ${currSeason}`);
+                return;
+            }
+
+            const row = stmt.getAsObject();
+
+            const playerNameElt = document.createElement("div");
+            playerNameElt.classList.add("playerinfoname");
+            playerNameElt.textContent = row.tag;
+            parentElt.appendChild(playerNameElt);
+
+            const idElt = document.createElement("div");
+            idElt.classList.add("playerinfoid");
+            if (/^[0-9]+$/.exec(playerId) !== null) {
+                idElt.innerHTML = `<i>id:</i> <a href="https://www.supermajor.gg/ultimate/player/${row.tag}?id=S${playerId}" target="_blank" class="piidurl">${playerId}</a>`;
+            }
+            else {
+                idElt.innerHTML = `<i>id:</i> ${playerId}`;
+            }
+            parentElt.appendChild(idElt);
+
+            const otherTags = getOtherTags(row.other_tags, row.tag);
+            if (otherTags !== null) {
+                const playerOtherTagsElt = document.createElement("div");
+                playerOtherTagsElt.innerHTML = `<i>aka:</i> ${otherTags.join(", ")}`;
+                playerOtherTagsElt.classList.add("playerinfotags");
+                parentElt.appendChild(playerOtherTagsElt);
+            }
+
+            stmt.free();
+        }
+
+        async function resizeTextToFit(textElement, defaultSize) {
+            if (!document.body.contains(textElement)) {
+                return;
+            }
+            const text = textElement.textContent;
+
+            const initialDqShownState = dqToursShown;
+
+            toggleDqTours(true);
+            defaultFontWidth = getTextWidth(text, getCanvasFont(textElement));
+            // console.log(`${text} ${defaultFontWidth} ${textElement.offsetWidth}`);
+            if (defaultFontWidth > textElement.offsetWidth) {
+                textElement.style.fontSize = `${defaultSize * textElement.offsetWidth / defaultFontWidth}rem`;
+            }
+
+            toggleDqTours(initialDqShownState);
+        }
+
+        function populateTournaments(parentElt, playerId) {
+            let query = "SELECT placings.place, placings.dq, tournaments.id, tournaments.name, tournaments.value, tournaments.region, tournaments.date FROM placings JOIN tournaments ON placings.tournament_id = tournaments.id WHERE placings.player_id = :pid ORDER BY tournaments.date";
+            let stmt = db.prepare(query);
+            stmt.bind({":pid": playerId});
+
+            while (stmt.step()) {
+                const row = stmt.getAsObject();
+
+                const resultParentElt = document.createElement("div");
+                resultParentElt.classList.add("tournamentresult");
+
+                const resultElt = document.createElement("div");
+                resultElt.classList.add("tournamentresultpane");
+                resultElt.setAttribute("tourid", row.id);
+                resultElt.setAttribute("playerid", playerId);
+                resultElt.setAttribute("onclick", "toggleTournamentData(this)");
+                resultParentElt.appendChild(resultElt);
+
+                const resultNameElt = document.createElement("span");
+                resultNameElt.classList.add("tr-name");
+                resultNameElt.textContent = row.name;
+                resultElt.appendChild(resultNameElt);
+
+                queueMicrotask(() => resizeTextToFit(resultNameElt, 1.5));
+
+                const resultRegionElt = document.createElement("span");
+                resultRegionElt.classList.add("tr-region");
+                resultRegionElt.textContent = row.region;
+
+                const resultTierElt = document.createElement("span");
+                resultTierElt.classList.add("tr-tier");
+                resultTierElt.textContent = getLetterTier(row.value);
+
+                const resultValueElt = document.createElement("span");
+                resultValueElt.classList.add("tr-value");
+                resultValueElt.textContent = row.value;
+
+                const resultTColorElt = document.createElement("span");
+                resultTColorElt.classList.add("tr-tiercolor");
+                resultTColorElt.style.backgroundImage = `var(--gradient-tour-${getLetterTier(row.value).replace("+", "plus").toLowerCase()})`;
+
+                const resultPlacingWrapper = document.createElement("span");
+                resultPlacingWrapper.classList.add("tr-placingwrap");
+                const resultPlacingElt = document.createElement("span");
+                resultPlacingElt.classList.add("tr-placing");
+                resultPlacingElt.textContent = row.place;
+                const resultOrdElt = document.createElement("span");
+                resultOrdElt.classList.add("tr-placingord");
+                resultOrdElt.textContent = ordinalSuffix(row.place);
+
+                resultPlacingWrapper.appendChild(resultPlacingElt);
+                resultPlacingWrapper.appendChild(resultOrdElt);
+
+                if (row.dq === 1) {
+                    const resultDqElt = document.createElement("span");
+                    resultDqElt.classList.add("tr-dqtext");
+                    resultDqElt.textContent = "(DQ)";
+                    resultPlacingWrapper.appendChild(resultDqElt);
+
+                    resultPlacingElt.classList.add("tr-placingdq");
+                    resultOrdElt.classList.add("tr-placingdq");
+                    resultDqElt.classList.add("tr-placingdq");
+
+                    resultElt.classList.add("tournamentresult-dq");
+                }
+
+                const resultDateElt = document.createElement("span");
+                resultDateElt.classList.add("tr-date");
+                resultDateElt.textContent = row.date;
+
+                resultElt.appendChild(resultRegionElt);
+                resultElt.appendChild(resultTierElt);
+                resultElt.appendChild(resultValueElt);
+                resultElt.appendChild(resultTColorElt);
+                resultElt.appendChild(resultPlacingWrapper);
+                resultElt.appendChild(resultDateElt);
+
+                parentElt.appendChild(resultParentElt);
+            }
+
+            stmt.free();
+        }
+
+        function clearChildren(elt) {
+            while (elt.firstChild !== null) {
+                elt.removeChild(elt.firstChild);
+            }
+        }
+
+        function toggleTournamentData(element) {
+            if (element.classList.contains("showingsets")) {
+                // hide sets
+                hideTournamentData(element.parentElement);
+                element.classList.remove("showingsets");
+            }
+            else {
+                // show sets
+                populateTournamentData(element);
+                element.classList.add("showingsets");
+            }
+        }
+
+        function populateTournamentData(element) {
+            if (element.classList.contains("setsgenned")) {
+                // sets exist, just show them
+                element.parentElement.querySelector(".setswrapper").style.removeProperty("display");
+                return;
+            }
+
+            const playerId = element.getAttribute("playerid");
+            const setsData = getSetsData(element);
+
+            const tourWrapper = element.parentElement;
+            const setsWrapper = document.createElement("div");
+            setsWrapper.classList.add("setswrapper");
+            tourWrapper.appendChild(setsWrapper);
+
+            for (const setData of setsData) {
+                const setWrapper = document.createElement("div");
+                setWrapper.classList.add("setwrapper");
+                setsWrapper.appendChild(setWrapper);
+
+                const setElement = generateSetElt(setData, playerId);
+                setWrapper.appendChild(setElement);
+            }
+
+            element.classList.add("setsgenned");
+        }
+
+        function hideTournamentData(tourParentElement) {
+            tourParentElement.querySelector(".setswrapper").style.display = "none";
+        }
+
+        function getSetsData(element) {
+            const tournamentId = element.getAttribute("tourid");
+            const playerId = element.getAttribute("playerid");
+
+            const orderExists = !(["ur_db", "ur_db_2024", "ur_db_2024_2"].includes(currSeason));
+
+            const query = `SELECT sets.tournament_id, sets.winner_id, sets.player_1_id, sets.player_2_id, sets.player_1_score, sets.player_2_score, p1.tag tag1, p2.tag tag2 FROM sets JOIN players p1 ON sets.player_1_id = p1.id JOIN players p2 ON sets.player_2_id = p2.id WHERE tournament_id = :tid AND (player_1_id = :pid OR player_2_id = :pid) ORDER BY ${orderExists ? "set_order" : "set_id"}`;
+            const stmt = db.prepare(query);
+            stmt.bind({":tid": tournamentId, ":pid": playerId});
+
+            const setsData = [];
+            while (stmt.step()) {
+                setsData.push(stmt.getAsObject());
+            }
+
+            return setsData;
+        }
+
+        function generateSetElt(setData, rootPlayerId) {
+            const p1IsRoot = setData.player_1_id === rootPlayerId;
+            const otherPlayerTag = p1IsRoot ? setData.tag2 : setData.tag1;
+            const otherPlayerId = p1IsRoot ? setData.player_2_id : setData.player_1_id;
+            const rootPlayerWon = setData.winner_id === rootPlayerId;
+
+            const setElement = document.createElement("div");
+            setElement.classList.add("set");
+
+            let rootScore = p1IsRoot ? setData.player_1_score : setData.player_2_score;
+            let otherScore = p1IsRoot ? setData.player_2_score : setData.player_1_score;
+
+            if (!rootScore && !otherScore) {
+                rootScore = rootPlayerWon ? "W" : "L";
+                otherScore = rootPlayerWon ? "L" : "W";
+            }
+            else if (rootScore === -1) {
+                rootScore = "DQ";
+                otherScore = "W";
+                setElement.classList.add("set-dq");
+            }
+            else if (otherScore === -1) {
+                rootScore = "W";
+                otherScore = "DQ";
+                setElement.classList.add("set-dq");
+            }
+
+            const setWlIndicator = document.createElement("span");
+            setWlIndicator.classList.add("setwlind");
+            if (rootPlayerWon) setWlIndicator.style.backgroundImage = "var(--gradient-set-win)";
+            else setWlIndicator.style.backgroundImage = "var(--gradient-set-loss)";
+
+            setElement.appendChild(setWlIndicator);
+
+            const setLScore = document.createElement("span");
+            setLScore.classList.add("set-lscore");
+            setLScore.textContent = rootScore;
+            setElement.appendChild(setLScore);
+
+            const setDivider = document.createElement("span");
+            setDivider.classList.add("set-divider");
+            setDivider.textContent = "-";
+            setElement.appendChild(setDivider);
+
+            const setRScore = document.createElement("span");
+            setRScore.classList.add("set-rscore");
+            setRScore.textContent = otherScore;
+            setElement.appendChild(setRScore);
+
+            const setPlayer = document.createElement("span");
+            setPlayer.classList.add("set-player");
+            setPlayer.setAttribute("playerid", otherPlayerId);
+            setPlayer.setAttribute("tourid", setData.tournament_id);
+            setPlayer.setAttribute("onclick", "goToPlayerPageWrapper(this)");
+            setElement.appendChild(setPlayer);
+
+            const setTag = document.createElement("span");
+            setTag.classList.add("set-tag");
+            setTag.textContent = otherPlayerTag;
+            setPlayer.appendChild(setTag);
+
+            const setId = document.createElement("span");
+            setId.classList.add("set-id");
+            setId.textContent = "#" + otherPlayerId;
+            setPlayer.appendChild(setId);
+
+            return setElement;
+        }
+
+        function goToPlayerPageWrapper(element) {
+            const playerId = element.getAttribute("playerid");
+            const tournamentId = element.getAttribute("tourid");
+
+            goToPlayerPage(playerId, tournamentId);
+        }
+
+        function goToPlayerPage(playerId, tournamentId) {
+            getPlayerData(playerId);
+
+            if (tournamentId !== null) {
+                const tournamentPane = document.querySelector(`.tournamentresultpane[tourid="${tournamentId}"]`);
+                toggleTournamentData(tournamentPane);
+            }
+        }
+
+        function toggleOptions() {
+            const options = document.getElementById('option');
+
+            if (options.style.display === 'none') {
+                options.style.display = 'block';
+            }
+            else {
+                options.style.display = 'none';
+            }
+        }
+
+        function toggleDqTours(changeTo = undefined) {
+            const dqStyleBlock = document.getElementById("dqstyle");
+            if (changeTo === true) {
+                dqStyleBlock.innerHTML = ".tournamentresult:has(.tournamentresult-dq) {display: block;}";
+                dqToursShown = true;
+            }
+            else if (changeTo === false) {
+                dqStyleBlock.innerHTML = ".tournamentresult:has(.tournamentresult-dq) {display: none;}";
+                dqToursShown = false;
+            }
+            else if (changeTo === undefined) {
+                // switch state
+                if (dqToursShown) {
+                    dqStyleBlock.innerHTML = ".tournamentresult:has(.tournamentresult-dq) {display: none;}";
+                }
+                else {
+                    dqStyleBlock.innerHTML = ".tournamentresult:has(.tournamentresult-dq) {display: block;}";
+                }
+
+                dqToursShown = !dqToursShown;
+            }
+        }
+
+        document.addEventListener("click", hidePlayerDropdown)
+
+        updateCurrentDatabase();
+    </script>
+</body>
+</html>
