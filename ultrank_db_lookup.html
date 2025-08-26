@@ -212,7 +212,7 @@
 
         .tr-region {
             position: absolute;
-            left: calc(min(40%, 4.125rem + 14ch));
+            left: calc(max(30%, min(50%, 4.125rem + 14ch)));
             bottom: 0.1875rem;
             text-align: left;
             font-size: 0.875rem;
@@ -423,8 +423,6 @@
         </div>
         <div id="infowaiting">Loading database...</div>
         <br>
-        <br>
-
         <div id='optionsbutton' onclick='toggleOptions()'>
             <u>Options</u>
         </div>
@@ -794,13 +792,15 @@
             }
             const text = textElement.textContent;
 
+            textElement.style.removeProperty("font-size");
+
             const initialDqShownState = dqToursShown;
 
             toggleDqTours(true);
             defaultFontWidth = getTextWidth(text, getCanvasFont(textElement));
             // console.log(`${text} ${defaultFontWidth} ${textElement.offsetWidth}`);
-            if (defaultFontWidth > textElement.offsetWidth) {
-                textElement.style.fontSize = `${defaultSize * textElement.offsetWidth / defaultFontWidth}rem`;
+            if (defaultFontWidth + 10 > textElement.offsetWidth) {
+                textElement.style.fontSize = `${defaultSize * textElement.offsetWidth / (defaultFontWidth + 10)}rem`;
             }
 
             toggleDqTours(initialDqShownState);
@@ -1042,6 +1042,15 @@
             }
         }
 
+        function recalculateTextSizes() {
+            const tournamentNames = document.getElementsByClassName("tr-name");
+           
+            console.log(tournamentNames.length); 
+            for (const itm of tournamentNames) {
+                setTimeout(resizeTextToFit, 0, itm, 1.5);
+            }
+        }
+
         function toggleOptions() {
             const options = document.getElementById('option');
 
@@ -1076,7 +1085,8 @@
             }
         }
 
-        document.addEventListener("click", hidePlayerDropdown)
+        document.addEventListener("click", hidePlayerDropdown);
+        window.addEventListener("resize", recalculateTextSizes);
 
         updateCurrentDatabase();
     </script>
