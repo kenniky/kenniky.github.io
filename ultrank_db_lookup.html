@@ -81,6 +81,15 @@
             cursor: pointer;
         }
 
+        #option {
+            padding-left: 10px;
+            padding-right: 10px;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            background-color: whitesmoke;
+            width: fit-content;
+        }
+
         .dropdownitem {
             height: 1.875em;
             border-color: darkgray;
@@ -174,6 +183,9 @@
         .tournamentresultwrapper {
             width: 95vw;
             max-width: 50em;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .tournamentresult {
@@ -190,6 +202,7 @@
             user-select: none;
             background-color: #eeeeee;
             cursor: pointer;
+            z-index: 5;
         }
 
         .tournamentresult-dq {
@@ -429,9 +442,16 @@
         <div id='option' style='display: none;' class='showhide'>
             <label for='dq-show'>Show DQ'd tournaments</label>
             <input type='checkbox' id='dq-show' onchange="toggleDqTours()">
+            <br>
+            <label for="tournament-order">Order tournaments by</label>
+            <select id="tournament-order" onchange="updateTournamentOrder()">
+                <option value="date">date</option>
+                <option value="value">value</option>
+            </select>
         </div>
         <br>
         <div id="queryresult" />
+        <div style="padding-bottom: 7em" />
     </center>
     <script type='text/javascript'>
         let db = undefined;
@@ -887,6 +907,8 @@
             }
 
             stmt.free();
+
+            updateTournamentOrder()
         }
 
         function clearChildren(elt) {
@@ -1083,6 +1105,36 @@
 
                 dqToursShown = !dqToursShown;
             }
+        }
+
+        function updateTournamentOrder() {
+            const order = document.getElementById("tournament-order").value;
+
+            const tournamentResults = Array.from(document.getElementsByClassName("tournamentresult"));
+            tournamentResults.sort((a, b) => {
+                const func = order === "date" ? extractDate : extractNegValue;
+                const itemA = func(a);
+                const itemB = func(b);
+
+                if (itemA < itemB) return -1;
+                if (itemA > itemB) return 1;
+                return 0;
+            });
+
+            for (const [i, elt] of tournamentResults.entries()) {
+                elt.style.order = i;
+            }
+        }
+
+        function extractDate(tournamentResult) {
+            const dateElement = tournamentResult.querySelector(".tr-date");
+            return dateElement.textContent;
+        }
+
+        function extractNegValue(tournamentResult) {
+            // extracts negative value, because we want to sort value high to low
+            const valueElement = tournamentResult.querySelector(".tr-value");
+            return -1 * Number(valueElement.textContent);
         }
 
         document.addEventListener("click", hidePlayerDropdown);
