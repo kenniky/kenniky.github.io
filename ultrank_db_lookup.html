@@ -447,11 +447,16 @@
             <select id="tournament-order" onchange="updateTournamentOrder()">
                 <option value="date">date</option>
                 <option value="value">value</option>
+                <option value="placing">placing</option>
+            </select>
+            <select id="tournament-order-ad" onchange="updateTournamentOrder()">
+                <option value="asc">ascending</option>
+                <option value="desc">descending</option>
             </select>
         </div>
         <br>
         <div id="queryresult" />
-        <div style="padding-bottom: 7em" />
+        <div style="height: 7em" />
     </center>
     <script type='text/javascript'>
         let db = undefined;
@@ -1109,32 +1114,33 @@
 
         function updateTournamentOrder() {
             const order = document.getElementById("tournament-order").value;
+            const ascdesc = document.getElementById("tournament-order-ad").value;
 
-            const tournamentResults = Array.from(document.getElementsByClassName("tournamentresult"));
-            tournamentResults.sort((a, b) => {
-                const func = order === "date" ? extractDate : extractNegValue;
-                const itemA = func(a);
-                const itemB = func(b);
+            const tournamentResults = document.getElementsByClassName("tournamentresult");
+            let func = (x) => 0; // If it errors, just return 0 always
 
-                if (itemA < itemB) return -1;
-                if (itemA > itemB) return 1;
-                return 0;
-            });
+            if (order === "date") func = extractDate;
+            else if (order === "value") func = extractValue;
+            else if (order === "placing") func = extractPlacing;
 
-            for (const [i, elt] of tournamentResults.entries()) {
-                elt.style.order = i;
+            for (const elt of tournamentResults) {
+                elt.style.order = (ascdesc === "desc" ? "-" : "") + func(elt);
             }
         }
 
         function extractDate(tournamentResult) {
             const dateElement = tournamentResult.querySelector(".tr-date");
-            return dateElement.textContent;
+            return dateElement.textContent.replaceAll("-", "");
         }
 
-        function extractNegValue(tournamentResult) {
-            // extracts negative value, because we want to sort value high to low
+        function extractValue(tournamentResult) {
             const valueElement = tournamentResult.querySelector(".tr-value");
-            return -1 * Number(valueElement.textContent);
+            return valueElement.textContent;
+        }
+
+        function extractPlacing(tournamentResult) {
+            const placingElt = tournamentResult.querySelector(".tr-placing");
+            return placingElt.textContent;
         }
 
         document.addEventListener("click", hidePlayerDropdown);
