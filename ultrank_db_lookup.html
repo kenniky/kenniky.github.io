@@ -5,10 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.13.0/sql-wasm.js"></script>
     <script src="https://unpkg.com/unzipit@1.4.2/dist/unzipit.js"></script>
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/simplebar@latest/dist/simplebar.css"
-    />
     <script src="https://unpkg.com/simplebar@latest/dist/simplebar.min.js"></script>
     <title>LumiRank Database Lookup</title>
     <noscript>
@@ -21,13 +17,13 @@
     <style type="text/css">
         :root {
             --gradient-tour-sp: linear-gradient(to right, #76a0d1, rgb(0,0,0,0));
-            --gradient-tour-pplus: linear-gradient(to right, #5669bf, rgb(0,0,0,0));
+            --gradient-tour-p2: linear-gradient(to right, #5669bf, rgb(0,0,0,0));
             --gradient-tour-p: linear-gradient(to right, #ae5ce6, rgb(0,0,0,0));
-            --gradient-tour-splus: linear-gradient(to right, #e65c9c, rgb(0,0,0,0));
+            --gradient-tour-s2: linear-gradient(to right, #e65c9c, rgb(0,0,0,0));
             --gradient-tour-s: linear-gradient(to right, #e65c5c, rgb(0,0,0,0));
-            --gradient-tour-aplus: linear-gradient(to right, #e68e5c, rgb(0,0,0,0));
+            --gradient-tour-a2: linear-gradient(to right, #e68e5c, rgb(0,0,0,0));
             --gradient-tour-a: linear-gradient(to right, #e6a35c, rgb(0,0,0,0));
-            --gradient-tour-bplus: linear-gradient(to right, #e6ca5c, rgb(0,0,0,0));
+            --gradient-tour-b2: linear-gradient(to right, #e6ca5c, rgb(0,0,0,0));
             --gradient-tour-b: linear-gradient(to right, #dce65c, rgb(0,0,0,0));
             --gradient-tour-c: linear-gradient(to right, #5ce66c, rgb(0,0,0,0));
             --gradient-tour-d: linear-gradient(to right, #5cc4e6, rgb(0,0,0,0));
@@ -403,11 +399,27 @@
             position: relative;
         }
     </style>
-    <style type="text/css" id="dqstyle">
+    <style type="text/css" id="editablestyle">
         .tournamentresult:has(.tournamentresult-dq) {
             display: none;
         }
+
+        .tournamentresult:has(.tier-sp) {}
+        .tournamentresult:has(.tier-p2) {}
+        .tournamentresult:has(.tier-p) {}
+        .tournamentresult:has(.tier-s2) {}
+        .tournamentresult:has(.tier-s) {}
+        .tournamentresult:has(.tier-a2) {}
+        .tournamentresult:has(.tier-a) {}
+        .tournamentresult:has(.tier-b2) {}
+        .tournamentresult:has(.tier-b) {}
+        .tournamentresult:has(.tier-c) {}
+        .tournamentresult:has(.tier-d) {}
     </style>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/simplebar@latest/dist/simplebar.css"
+    />
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,500;1,500&display=swap');
     </style>
@@ -440,9 +452,6 @@
             <u>Options</u>
         </div>
         <div id='option' style='display: none;' class='showhide'>
-            <label for='dq-show'>Show DQ'd tournaments</label>
-            <input type='checkbox' id='dq-show' onchange="toggleDqTours()">
-            <br>
             <label for="tournament-order">Order tournaments by</label>
             <select id="tournament-order" onchange="updateTournamentOrder()">
                 <option value="date">date</option>
@@ -453,6 +462,39 @@
                 <option value="asc">ascending</option>
                 <option value="desc">descending</option>
             </select>
+            <br>
+            <label for='dq-show'>Show DQ'd tournaments</label>
+            <input type='checkbox' id='dq-show' onchange="toggleDqTours()">
+            <br>
+            <label for="tierselect">Filter tiers:</label>
+            <span id="tierselect">
+                <input type="checkbox" id="tiersp" value="sp" checked onchange="updateShownTiers()">
+                <label for="tiersp">SP</label>
+                <input type="checkbox" id="tierp2" value="p2" checked onchange="updateShownTiers()">
+                <label for="tierp2">P+</label>
+                <input type="checkbox" id="tierp" value="p" checked onchange="updateShownTiers()">
+                <label for="tierp">P</label>
+                <input type="checkbox" id="tiers2" value="s2" checked onchange="updateShownTiers()">
+                <label for="tiers2">S+</label>
+                <input type="checkbox" id="tiers" value="s" checked onchange="updateShownTiers()">
+                <label for="tiers">S</label>
+                <input type="checkbox" id="tiera2" value="a2" checked onchange="updateShownTiers()">
+                <label for="tiera2">A+</label>
+                <input type="checkbox" id="tiera" value="a" checked onchange="updateShownTiers()">
+                <label for="tiera">A</label>
+                <input type="checkbox" id="tierb2" value="b2" checked onchange="updateShownTiers()">
+                <label for="tierb2">B+</label>
+                <input type="checkbox" id="tierb" value="b" checked onchange="updateShownTiers()">
+                <label for="tierb">B</label>
+                <input type="checkbox" id="tierc" value="c" checked onchange="updateShownTiers()">
+                <label for="tierc">C</label>
+                <input type="checkbox" id="tierd" value="d" checked onchange="updateShownTiers()">
+                <label for="tierd">D</label>
+            </span>
+            <br>
+            <button type="button" onclick="updateTierDisplay('all')">Select all</button>
+            <button type="button" onclick="updateTierDisplay('none')">Deselect all</button>
+            <button type="button" onclick="updateTierDisplay('majors')">Select majors (A and above)</button>
         </div>
         <br>
         <div id="queryresult" />
@@ -464,6 +506,23 @@
         let lastQuery = "";
         let wrCache = {};
         let dqToursShown = false;
+
+        const STYLE_INDEX_DQ = 0;
+        const STYLE_INDEX_TIER = {
+            sp: 1,
+            p2: 2,
+            p: 3,
+            s2: 4,
+            s: 5,
+            a2: 6,
+            a: 7,
+            b2: 8,
+            b: 9,
+            c: 10,
+            d: 11
+        }
+
+        const TIER_LIST = ["sp", "p2", "p", "s2", "s", "a2", "a", "b2", "b", "c", "d"];
 
         function getLetterTier(value) {
             if (value >= 17000) return "SP";
@@ -477,21 +536,6 @@
             if (value >= 1000) return "B";
             if (value >= 500) return "C";
             return "D";
-        }
-
-        function getTierColor(tier) {
-            if (tier == "SP") return "#76a0d1";
-            if (tier == "P+") return "#5669bf";
-            if (tier == "P") return "#ae5ce6";
-            if (tier == "S+") return "#e65c9c";
-            if (tier == "S") return "#e65c5c";
-            if (tier == "A+") return "#e68e5c";
-            if (tier == "A") return "#e6a35c";
-            if (tier == "B+") return "#e6ca5c";
-            if (tier == "B") return "#dce65c";
-            if (tier == "C") return "#5ce66c";
-            if (tier == "D") return "#5cc4e6";
-            return "#b7b7b7";
         }
 
         function ordinalSuffix(num) {
@@ -870,7 +914,8 @@
 
                 const resultTColorElt = document.createElement("span");
                 resultTColorElt.classList.add("tr-tiercolor");
-                resultTColorElt.style.backgroundImage = `var(--gradient-tour-${getLetterTier(row.value).replace("+", "plus").toLowerCase()})`;
+                resultTColorElt.style.backgroundImage = `var(--gradient-tour-${getLetterTier(row.value).replace("+", "2").toLowerCase()})`;
+                resultElt.classList.add(`tier-${getLetterTier(row.value).replace("+", "2").toLowerCase()}`);
 
                 const resultPlacingWrapper = document.createElement("span");
                 resultPlacingWrapper.classList.add("tr-placingwrap");
@@ -1072,7 +1117,7 @@
         function recalculateTextSizes() {
             const tournamentNames = document.getElementsByClassName("tr-name");
            
-            console.log(tournamentNames.length); 
+            // console.log(tournamentNames.length); 
             for (const itm of tournamentNames) {
                 setTimeout(resizeTextToFit, 0, itm, 1.5);
             }
@@ -1089,23 +1134,23 @@
             }
         }
 
-        function toggleDqTours(changeTo = undefined) {
-            const dqStyleBlock = document.getElementById("dqstyle");
-            if (changeTo === true) {
-                dqStyleBlock.innerHTML = ".tournamentresult:has(.tournamentresult-dq) {display: block;}";
+        function toggleDqTours(show = undefined) {
+            const dqStyleRule = document.getElementById("editablestyle").sheet.rules[STYLE_INDEX_DQ].style;
+            if (show === true) {
+                dqStyleRule.removeProperty("display");
                 dqToursShown = true;
             }
-            else if (changeTo === false) {
-                dqStyleBlock.innerHTML = ".tournamentresult:has(.tournamentresult-dq) {display: none;}";
+            else if (show === false) {
+                dqStyleRule.setProperty("display", "none");
                 dqToursShown = false;
             }
-            else if (changeTo === undefined) {
+            else if (show === undefined) {
                 // switch state
                 if (dqToursShown) {
-                    dqStyleBlock.innerHTML = ".tournamentresult:has(.tournamentresult-dq) {display: none;}";
+                    dqStyleRule.setProperty("display", "none");
                 }
                 else {
-                    dqStyleBlock.innerHTML = ".tournamentresult:has(.tournamentresult-dq) {display: block;}";
+                    dqStyleRule.removeProperty("display");
                 }
 
                 dqToursShown = !dqToursShown;
@@ -1141,6 +1186,37 @@
         function extractPlacing(tournamentResult) {
             const placingElt = tournamentResult.querySelector(".tr-placing");
             return placingElt.textContent;
+        }
+
+        function updateShownTiers() {
+            const dqStyleSheet = document.getElementById("editablestyle").sheet;
+
+            for (const tier of TIER_LIST) {
+                const tierCheckbox = document.getElementById(`tier${tier}`);
+                const tierStyle = dqStyleSheet.rules[STYLE_INDEX_TIER[tier]].style;
+
+                if (tierCheckbox.checked) {
+                    tierStyle.removeProperty("display");
+                }
+                else{
+                    tierStyle.setProperty("display", "none");
+                }
+            }
+        }
+
+        function updateTierDisplay(display) {
+            if (display === "all") {
+                TIER_LIST.forEach(tier => document.getElementById(`tier${tier}`).checked = true);
+            }
+            else if (display === "none") {
+                TIER_LIST.forEach(tier => document.getElementById(`tier${tier}`).checked = false);
+            }
+            else if (display === "majors") {
+                ["sp", "p2", "p", "s2", "s", "a2", "a"].forEach(tier => document.getElementById(`tier${tier}`).checked = true);
+                ["b2", "b", "c", "d"].forEach(tier => document.getElementById(`tier${tier}`).checked = false);
+            }
+
+            updateShownTiers();
         }
 
         document.addEventListener("click", hidePlayerDropdown);
