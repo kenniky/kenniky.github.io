@@ -427,7 +427,7 @@
 <body>
     <center>
         <div>
-            <img src="https://i.imgur.com/INuDoKZ.png" id='squirtle'>
+            <img src="https://i.imgur.com/Q8yLxwn.png" id='squirtle'>
         </div>
         <div>
             <label for="seasonselect">Choose a season:</label>
@@ -492,8 +492,8 @@
                 <label for="tierd">D</label>
             </span>
             <br>
-            <button type="button" onclick="updateTierDisplay('all')">Select all</button>
-            <button type="button" onclick="updateTierDisplay('none')">Deselect all</button>
+            <button type="button" onclick="updateTierDisplay('all')">Select all tiers</button>
+            <button type="button" onclick="updateTierDisplay('none')">Deselect all tiers</button>
             <button type="button" onclick="updateTierDisplay('majors')">Select majors (A and above)</button>
         </div>
         <br>
@@ -863,16 +863,17 @@
 
             textElement.style.removeProperty("font-size");
 
-            const initialDqShownState = dqToursShown;
+            parentElement = textElement.closest(".tournamentresult");
+            const initialState = parentElement.style.display;
 
-            toggleDqTours(true);
+            parentElement.style.display = "block";
             defaultFontWidth = getTextWidth(text, getCanvasFont(textElement));
             // console.log(`${text} ${defaultFontWidth} ${textElement.offsetWidth}`);
             if (defaultFontWidth + 10 > textElement.offsetWidth) {
                 textElement.style.fontSize = `${defaultSize * textElement.offsetWidth / (defaultFontWidth + 10)}rem`;
             }
 
-            toggleDqTours(initialDqShownState);
+            parentElement.style.display = initialState;
         }
 
         function populateTournaments(parentElt, playerId) {
