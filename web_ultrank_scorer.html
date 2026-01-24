@@ -58,7 +58,7 @@
         }
 
         #warning {
-            visibility: visible;
+            visibility: hidden;
         }
     </style>
 </head>
@@ -346,6 +346,7 @@
         }
 
         function showResult(result) {
+            console.log(result.mult);
             let resultDiv = document.getElementById('result');
 
             // Clear div
