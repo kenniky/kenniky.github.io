@@ -26,7 +26,7 @@
             position: relative;
             display: inline-block;
             cursor: pointer;
-            color: #00f;
+            color: #555;
         }
 
         .popup .popuptext {
@@ -77,20 +77,35 @@
         <div>
             <i>Make sure to click directly into the singles event that you want to tier!</i>
         </div>
-        
+        <br>
+
         <div>
-            <label for='invitational'>Invitational?</label>
-            <input type='checkbox' id='invitational'>
+            <label for='startggkey'>Personal start.gg API key:</label>
+            <input type='text' id='startggkey' style='width: 30px;' autocomplete="on">
+            <div class='popup' id='popup'>
+                What's this?
+                <span class='popuptext' id='popupFrame'>
+                    <a href="https://developer.start.gg/docs/authentication/#generating-a-token">Follow the <b>Generating a token</b> section here to acquire an API key.</a>
+                    <br>
+                    You're now required to supply your own API key.
+                </span>
+            </div>
         </div>
 
+        <br>
         <div>
             <div id='advsettingsbutton' onclick='toggleadvvis()'>
                 <u>Advanced settings (click to toggle visibility)</u>
             </div>
             <div id='advsettings' style='display: none;' class='showhide'>
+        
                 <div>
-                    <label for='startggkey'>Personal start.gg API key (for private attendee lists):</label>
-                    <input type='text' id='startggkey' style='width: 30px;'>
+                    <label for='invitational'>Invitational (no difference from 2026.1 onwards)</label>
+                    <input type='checkbox' id='invitational'>
+                </div>
+                <div>
+                    <label for='fulldetails'>In-depth summary</label>
+                    <input type="checkbox" id="fulldetails">
                 </div>
                 <!-- <div>
                     <label for='sametag'>Show same-tag matches</label>
@@ -317,6 +332,11 @@
 
         let pyodideReadyPromise = undefined;
 
+        function togglePopup() {
+            let popup = document.getElementById("popupFrame");
+            popup.classList.toggle("show");
+        }
+
         function toggleadvvis() {
             let advsettings = document.getElementById('advsettings');
 
@@ -330,7 +350,7 @@
 
         function togglesametag() {
             let sametagblock = document.getElementById('sametag');
-            console.log(sametagblock);
+            // console.log(sametagblock);
 
             if (sametagblock.style.display === 'none') {
                 sametagblock.style.display = 'block';
@@ -346,7 +366,9 @@
         }
 
         function showResult(result) {
-            console.log(result.mult);
+            let showFullDetails = document.getElementById('fulldetails').checked;
+
+            // console.log(result.mult);
             let resultDiv = document.getElementById('result');
 
             // Clear div
@@ -389,17 +411,21 @@
 
             if (result.entrants < entrantMinimum && (max_score < scoreMinimum || result.values.length + result.potential.length + result.dqs.length < 2)) {
                 let warningNode = document.createElement('div');
-                warningNode.innerHTML = `<b>WARNING: This tournament does not qualify for UltRank.</b>
-                <br>
-                Requirements for a x${mult} region are either ${entrantMinimum} entrants or a score of at least ${scoreMinimum} with at least 2 point-value players.`;
+                warningNode.innerHTML = `<b>WARNING: This tournament does not qualify for UltRank.</b>`;
+                if (showFullDetails) {
+                    warningNode.innerHTML += `<br>
+                    Requirements for a x${mult} region are either ${entrantMinimum} entrants or a score of at least ${scoreMinimum} with at least 2 point-value players.`;
+                }
                 resultDiv.appendChild(warningNode);
                 counts = false;
             }
             else if (result.entrants < entrantMinimum && (score < scoreMinimum || result.values.length < 2)) {
                 let warningNode = document.createElement('div');
-                warningNode.innerHTML = `<b>WARNING: This tournament may not qualify for UltRank.</b>
-                <br>
-                Requirements for a x${mult} region are either ${entrantMinimum} entrants or a score of at least ${scoreMinimum} with at least 2 point-value players.`;
+                warningNode.innerHTML = `<b>WARNING: This tournament may not qualify for UltRank.</b>`;
+                if (showFullDetails) {
+                    warningNode.innerHTML += `<br>
+                    Requirements for a x${mult} region are either ${entrantMinimum} entrants or a score of at least ${scoreMinimum} with at least 2 point-value players.`;
+                }
                 resultDiv.appendChild(warningNode);
                 counts = false;
             }
@@ -436,35 +462,47 @@
             }
 
             let pointsHeader = document.createElement('h3');
-            pointsHeader.textContent = `Total points: ${score} - ${tier}`;
-            resultDiv.appendChild(pointsHeader)
-
-            let entrantsNode = document.createElement('div');
-            if (result.using_new_tiering_system()) {
-                let entrantsStr = `Entrants: ${result.entrants}`;
-                let entrantsScore = result.entrants;
-                if (mult >= 2) {
-                    entrantsStr += ` + ${Math.min(256, result.entrants)} (×2)`;
-                    entrantsScore += Math.min(256, result.entrants);
-                }
-                if (mult >= 3) {
-                    entrantsStr += ` + ${Math.min(128, result.entrants)} (×3)`;
-                    entrantsScore += Math.min(128, result.entrants);
-                }
-                if (mult === 1) {
-                    entrantsStr += ` (×1)`;
-                }
-                entrantsStr += ` = <b>${entrantsScore}</b>`;
-
-                entrantsNode.innerHTML = entrantsStr;
+            if (showFullDetails) {
+                pointsHeader.textContent = `Total points: ${score} - ${tier}`;
             }
             else {
-                entrantsNode.innerHTML = `Entrants: ${result.entrants} × ${mult} (region multiplier) = <b>${result.entrants * mult}</b>`;
+                pointsHeader.textContent = `${tier} - ${result.entrants} entrants`
             }
-            resultDiv.appendChild(entrantsNode);
+            resultDiv.appendChild(pointsHeader)
+
+            if (showFullDetails) {
+                let entrantsNode = document.createElement('div');
+                if (result.using_new_tiering_system()) {
+                    let entrantsStr = `Entrants: ${result.entrants}`;
+                    let entrantsScore = result.entrants;
+                    if (mult >= 2) {
+                        entrantsStr += ` + ${Math.min(256, result.entrants)} (×2)`;
+                        entrantsScore += Math.min(256, result.entrants);
+                    }
+                    if (mult >= 3) {
+                        entrantsStr += ` + ${Math.min(128, result.entrants)} (×3)`;
+                        entrantsScore += Math.min(128, result.entrants);
+                    }
+                    if (mult === 1) {
+                        entrantsStr += ` (×1)`;
+                    }
+                    entrantsStr += ` = <b>${entrantsScore}</b>`;
+
+                    entrantsNode.innerHTML = entrantsStr;
+                }
+                else {
+                    entrantsNode.innerHTML = `Entrants: ${result.entrants} × ${mult} (region multiplier) = <b>${result.entrants * mult}</b>`;
+                }
+                resultDiv.appendChild(entrantsNode);
+            }
 
             let playerValueHeader = document.createElement('h3');
-            playerValueHeader.textContent = `Player value points`;
+            if (showFullDetails) {
+                playerValueHeader.textContent = `Player value points`;
+            }
+            else {
+                playerValueHeader.textContent = `Notable entrants`;
+            }
             resultDiv.appendChild(playerValueHeader);
 
             let accountNode = document.createElement('div');
@@ -478,7 +516,7 @@
 
                 let tableHead = tableNode.createTHead();
                 let tableHeadRow = tableHead.insertRow();
-                let headers = ['Player', 'Points', 'Point Source'];
+                let headers = showFullDetails ? ['Player', 'Points', 'Point Source'] : ['Player', 'Notability'];
                 for (let headerText of headers) {
                     let th = document.createElement("th");
                     let text = document.createTextNode(headerText);
@@ -503,9 +541,11 @@
                     let text = document.createTextNode(playerName);
                     cell.appendChild(text);
 
-                    cell = row.insertCell();
-                    text = document.createTextNode(value.points);
-                    cell.appendChild(text);
+                    if (showFullDetails) {
+                        cell = row.insertCell();
+                        text = document.createTextNode(value.points);
+                        cell.appendChild(text);
+                    }
 
                     cell = row.insertCell();
                     text = document.createTextNode(value.player_value.note);
@@ -518,14 +558,14 @@
 
             if (result.dqs.length > 0) {
                 let dqs_header = document.createElement('h3');
-                dqs_header.textContent = `DQs (not counted in points)`;
+                dqs_header.textContent = showFullDetails ? `DQs (not counted in points)` : `DQs`;
                 resultDiv.appendChild(dqs_header)
 
                 let tableNode = document.createElement('table');
 
                 let tableHead = tableNode.createTHead();
                 let tableHeadRow = tableHead.insertRow();
-                let headers = ['Player', 'Points', 'Point Source', 'DQs'];
+                let headers = showFullDetails ? ['Player', 'Points', 'Point Source', 'DQs'] : ['Player', 'Notability', 'DQs'];
                 for (let headerText of headers) {
                     let th = document.createElement("th");
                     let text = document.createTextNode(headerText);
@@ -550,9 +590,11 @@
                     let text = document.createTextNode(playerName);
                     cell.appendChild(text);
 
-                    cell = row.insertCell();
-                    text = document.createTextNode(value.value.points);
-                    cell.appendChild(text);
+                    if (showFullDetails) {
+                        cell = row.insertCell();
+                        text = document.createTextNode(value.value.points);
+                        cell.appendChild(text);
+                    }
 
                     cell = row.insertCell();
                     text = document.createTextNode(value.value.player_value.note);
@@ -579,7 +621,7 @@
                 </div>
             </div>*/
 
-            if (result.potential.length > 0) {
+            if (showFullDetails && result.potential.length > 0) {
                 // let sameTagMatches = document.getElementById('sametag').checked;
                 let potential_header = document.createElement('h3');
                 potential_header.textContent = `Potential Matches (not counted for points)`;
@@ -646,8 +688,12 @@
             }
         }
 
-        async function submit() {
+        async function submitWrapper() {
+            resetDiv();
+            submit();
+        }
 
+        function resetDiv() {
             let resultDiv = document.getElementById('result');
 
             // Clear div
@@ -655,6 +701,17 @@
                 resultDiv.removeChild(resultDiv.firstChild);
             }
             resultDiv.innerHTML = `<img src="https://media.tenor.com/wpSo-8CrXqUAAAAi/loading-loading-forever.gif">`;
+        }
+
+        async function submit() {
+
+            // let resultDiv = document.getElementById('result');
+
+            // // Clear div
+            // while (resultDiv.firstChild) {
+            //     resultDiv.removeChild(resultDiv.firstChild);
+            // }
+            // resultDiv.innerHTML = `<img src="https://media.tenor.com/wpSo-8CrXqUAAAAi/loading-loading-forever.gif">`;
 
             // console.log(resultDiv.innerHTML);
 
@@ -680,24 +737,14 @@
 
 
                 if (sggkey !== startggKey) {
-                    if (startggKey === '') {
-                        pyodide.runPython(`
-                            from pyodide.http import pyfetch
-                            from js import startggKey
+                    pyodide.runPython(`
+                        from pyodide.http import pyfetch
+                        from js import startggKey
 
-                            with open('smashgg.key', 'w') as f:
-                                f.write('4494e81731d801bb30d98004428aa688')
-                        `);
-                    }
-                    else {
-                        pyodide.runPython(`
-                            from pyodide.http import pyfetch
-                            from js import startggKey
-
-                            with open('smashgg.key', 'w') as f:
-                                f.write(startggKey)
-                        `);
-                    }
+                        with open('smashgg.key', 'w') as f:
+                            f.write(startggKey)
+                    `);
+                    
                     sggkey = startggKey;
                 }
 
@@ -767,7 +814,15 @@ def isolate_slug(url):
     if not match:
         raise InvalidEventUrlException 
 
-    return match.group(0).replace('/events/', '/event/')''')
+    return match.group(0).replace('/events/', '/event/')
+
+def refresh_startgg_key():
+    global ggkey
+    ggkeyfile = open('smashgg.key')
+    ggkey = ggkeyfile.read()
+    ggkeyfile.close()
+    ggheader = {"Authorization": "Bearer " + ggkey}
+''')
                     `);
                     filesImported = true;
                 }
@@ -779,6 +834,9 @@ def isolate_slug(url):
                         from js import tournamentSlug, isInvitational
 
                         from ultrank_tiering import Tournament 
+                        from startgg_toolkit import refresh_startgg_key
+
+                        refresh_startgg_key()
 
                         # Note: since geopy relies on sockets, we can't use it.
                         tournament = Tournament(tournamentSlug, isInvitational, location=False)
@@ -792,11 +850,13 @@ def isolate_slug(url):
                 result.destroy();
                 resultCopy.destroy();
             } catch(err) {
-                resultText = 'Something went wrong. Wait a bit then try again';
-                if (sggkey !== '') {
-                    resultText += '\nMake sure that you copy/pasted your start.gg api key correctly.'
+                if (sggkey === "") {
+                    resultText = "You didn't supply an API key, please follow the instructions in the \"What's this?\" popup to get one.";
                 }
-                resultDiv.textContent = resultText;
+                else {
+                    resultText = 'Something went wrong. Wait a bit then try again.<br>Make sure that you copy/pasted your start.gg api key correctly.';
+                }
+                resultDiv.innerHTML = resultText;
                 console.log(err);
             }
         }
@@ -804,7 +864,10 @@ def isolate_slug(url):
         let sggkey = 'not set';
 
         let button = document.getElementById('button');
-        button.addEventListener('click', submit);
+        button.addEventListener('click', submitWrapper);
+
+        let popupText = document.getElementById('popup');
+        popupText.addEventListener('click', togglePopup);
 
     </script>
 </body>
